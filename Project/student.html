@@ -7,7 +7,35 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <button name="topic">View Topic</button>
+    <div class="topic inactive">
+        Your topic is <var>Topic</var>
+        <var>description</var>
+        Members are <var>members</var>
+    </div>
+
+    <button class="prof">Edit Profile</button>
     
-    <script src="app.js"></script>
+        <div class="container inactive" name="prof">
+          <label for="addr">Postal Address</label>
+          <input type="text" placeholder="123, maizonos, Patra" name="addr" >
+      
+          <label for="email"><b>Email</b></label>
+          <input type="text" placeholder="Kostas@upatras.gr" name="email" >
+
+          <label for="mobile">Mobile Number</label>
+          <input type="number" placeholder="+30 1234567" name="mobile" >
+
+          <label for="landline">Landline Number</label>
+          <input type="number" name="landline">
+        
+            <button type="submit">Save</button>
+            <button name="cancel">Cancel</button>
+          
+          
+        </div>
+      
+
+    <script src="app.js" defer></script>
 </body>
 </html>
