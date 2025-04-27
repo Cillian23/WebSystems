@@ -4,37 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student</title>
+    <h1>Welcome Student</h1>
     <link rel="stylesheet" href="styles.css">
+    <link rel="Login" href="index.html"/>
 </head>
 <body>
-    <button name="topic">View Topic</button>
-    <div class="topic inactive">
-        Your topic is <var>Topic</var>
-        <var>description</var>
-        Members are <var>members</var>
-    </div>
+    <div class="menu">
+    <div class="box">
+    <button class="men viewtop">View Topic</button>
+    <br/>
+    <button class="men prof">Edit Profile</button>   
+    <br/>
+    <button class="men thes">View Thesis</button>
+</div>
+</div>
 
-    <button class="prof">Edit Profile</button>
-    
-        <div class="container inactive" name="prof">
-          <label for="addr">Postal Address</label>
-          <input type="text" placeholder="123, maizonos, Patra" name="addr" >
+<div class="box">
+<div class="popup inactive">
+<div class="topic inactive">
+    Your topic is <var>Topic</var>
+    <var>description</var>
+    Members are <var>members</var>
+</div>
+<div class="deets inactive">
+    <label for="addr">Postal Address</label>
+    <input type="text" placeholder="123, maizonos, Patra" name="addr" id="addr" >
+    <br/>
+    <label for="email">Email</label>
+    <input type="text" placeholder="Kostas@upatras.gr" name="email" id="email" >
+    <br/>
+    <label for="mobile">Mobile Number</label>
+    <input type="text" placeholder="+30 1234567" name="mobile" id="mobile" >
+    <br/>
+    <label for="landline">Landline Number</label>
+    <input type="number" name="landline" id="landline">
+    <br/>
+      <button type="submit">Save</button>
+      <button name="cancel">Cancel</button>
+  </div>
+  <div  class="thesis assigning inactive">
+    <label>
+        Select your preffered instructors
+    </label>
+    <button>1</button>
+    <button>2</button>
+    <button>3</button>
+</div>
+<div  class="thesis progressing inactive">
+    <label>
+        You are currently working on it
+    </label>
+</div>
+<div  class="thesis completed inactive">
+    <label>
+        Grade Under review
+    </label>
+</div>
+</div>
+</div>
       
-          <label for="email"><b>Email</b></label>
-          <input type="text" placeholder="Kostas@upatras.gr" name="email" >
-
-          <label for="mobile">Mobile Number</label>
-          <input type="number" placeholder="+30 1234567" name="mobile" >
-
-          <label for="landline">Landline Number</label>
-          <input type="number" name="landline">
-        
-            <button type="submit">Save</button>
-            <button name="cancel">Cancel</button>
-          
-          
-        </div>
-      
+    <form>
+        <button class="out" type="submit" formaction="index.html">Log Out</button>
+    </form>
 
     <script src="app.js" defer></script>
 </body>

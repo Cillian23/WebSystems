@@ -1,10 +1,36 @@
+html{
+   position: fixed;
+   max-height:100%;
+   max-width: 100%;
+}
+
+body{
+    
+    background-image: url(https://photos.upatras.gr/wp-content/uploads/sites/7/2020/11/%CE%A0%CE%B1%CE%BD%CE%B5%CF%80%CE%B9%CF%83%CF%84%CE%AE%CE%BC%CE%B9%CE%BF-%CE%A0%CE%B1%CF%84%CF%81%CF%8E%CE%BD-%CE%9A%CF%84%CE%AF%CF%81%CE%B9%CE%BF-%CE%A0%CF%81%CF%85%CF%84%CE%B1%CE%BD%CE%B5%CE%AF%CE%B1%CF%82-scaled.jpg);
+    background-size:cover;
+    background-attachment: fixed;
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-blend-mode:color;
+}
+
 form{
-    padding: 20%;
+    padding: 10%;
     display: block;
     justify-content: center;
     align-items: center;
     height: 100vh;
     
+}
+h1{
+    position: fixed;
+    padding: 1.5%;
+    background-color: #04AA6D;
+    left: 40%;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    border-radius: 10px;
+    opacity: 85%;
+    color: #fff;
 }
 
 label {
@@ -12,25 +38,67 @@ label {
     color: #04AA6D;
 }
 input[type=text], input[type=password]{
-    width: 100%;
-    padding: 7px 40px;
+    padding: 10px 10px;
     margin: 8px 0;
     display: inline-block;
     border: 1px solid #ccc;
-    box-sizing: border-box;
+    
 }
 
 button{
-    background-color: #04AA6D;
+   background-color: #04AA6D;
     color: white;
     padding: 14px 20px;
     margin: 8px 0;
     border: none;
     cursor: pointer;
-    width: 100%
+    border-radius: 10px;
+    transition-duration: 0.2s;
 }
+button.men{
+    width: 100%;
+}
+.menu{
+    position:fixed;
+    top: 10%;
+    right:10%;
+    align-items: left;
+    min-width: 15%;
+    padding: 5px 3px ;
+    border-radius: 10px; 
+}
+
+.box{
+   background-color: rgba(223, 194, 194, 0.5);
+   color: #fff;
+   border-radius: 10px;
+   padding: 10px 10px;
+}
+.popup{
+    position: fixed;
+    background-color: rgba(242, 236, 236, 0.85);
+    color:#04AA6D;
+    border-radius: 10px;
+    padding: 1.5%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display:flex;
+    align-items: left;
+    text-align:left;
+}
+
+.out{
+    position: fixed;
+    top: 2%;
+    left: 2%;
+    max-width: 5%;
+}
+
 button:hover{
-    opacity: 0.8;
+    color:#04AA6D;
+    background-color: #fff;
+
 }
 
 .active{
@@ -40,8 +108,8 @@ button:hover{
     display:none;
 }
 
-.saca{
+/*.saca{
     width: 100%;
     background-color: cadetblue;
     align-items: center;
-}
+}*/

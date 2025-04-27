@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LoginPage</title>
     <link rel="stylesheet" href="styles.css"/> 
+    <link rel="studentPage" href="student.html"/>
 </head>
 <body>
+  <div class="box"> 
     <form>
     <label for="uname"> <b>Enter username:</b> </label>
     <input
@@ -14,6 +16,7 @@
       id="uname"
       name="name"
       placeholder="E.g. Kostas@upatras.gr"/>
+      <br/>
 
     <label for="pword"> <b>Enter password:</b> </label>
     <input
@@ -21,10 +24,12 @@
       id="pword"
       name="password"
       placeholder="*********"/>
+      <br/>
 
-    <button type="submit">Login</button>
+    <button type="submit" formaction="student.html">Login</button>
 
     </form>
+  </div>
     <script src = "app.js"></script>
     
 </body>
