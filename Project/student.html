@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head>   <!--Setup and linking relevant pages-->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student</title>
@@ -9,24 +9,25 @@
     <link rel="Login" href="index.html"/>
 </head>
 <body>
-    <div class="menu">
-    <div class="box">
-    <button class="men viewtop">View Topic</button>
+    <div class="menu">  <!--Menu for student page options-->
+    <div class="box">  <!--Box class provides background box for css purposes-->
+    <button class="men viewtop">View Topic</button>  <!--View topic button-->
     <br/>
-    <button class="men prof">Edit Profile</button>   
+    <button class="men prof">Edit Profile</button>   <!--Edit profile button-->
     <br/>
-    <button class="men thes">View Thesis</button>
+    <button class="men thes">View Thesis</button>    <!--Thesis status button-->
 </div>
 </div>
 
-<div class="box">
-<div class="popup inactive">
-<div class="topic inactive">
+<div class="box">  <!--Box class provides background box for css purposes-->
+<div class="popup inactive">  <!--Popup contains all menu options within a central popup-->
+    <button class="popbtn">X</button>
+<div class="topic inactive">  <!--View topic-->
     Your topic is <var>Topic</var>
     <var>description</var>
     Members are <var>members</var>
 </div>
-<div class="deets inactive">
+<div class="deets inactive">  <!--Edit profile-->
     <label for="addr">Postal Address</label>
     <input type="text" placeholder="123, maizonos, Patra" name="addr" id="addr" >
     <br/>
@@ -42,7 +43,7 @@
       <button type="submit">Save</button>
       <button name="cancel">Cancel</button>
   </div>
-  <div  class="thesis assigning inactive">
+  <div  class="thesis assigning inactive">  <!--Thesis status-->
     <label>
         Select your preffered instructors
     </label>
@@ -63,10 +64,10 @@
 </div>
 </div>
       
-    <form>
+    <form>  <!--Log out button to return to Login Page-->
         <button class="out" type="submit" formaction="index.html">Log Out</button>
     </form>
 
-    <script src="app.js" defer></script>
+    <script src="app.js" defer></script> <!--Lets all elements load before javascript code kicks in-->
 </body>
 </html>
