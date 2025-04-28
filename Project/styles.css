@@ -55,9 +55,12 @@ button{  /*Generalised design for buttons without more specific instructions*/
     transition-duration: 0.2s;
 }
 button.men{    /*Menu buttons making sure they fill space available to them*/
-    width: 100%;
+    width: 100%; 
 }
 button.popbtn{  /*X-out button in top right corner, not working currently lol*/
+    background-color: rgba(232, 10, 10, 0.5) ;
+    padding:  10px 20px;
+    position: fixed;
     right: 0%;
     top: 0%;
 }
@@ -83,7 +86,7 @@ button.popbtn{  /*X-out button in top right corner, not working currently lol*/
     background-color: rgba(242, 236, 236, 0.85);
     color:#04AA6D;
     border-radius: 10px;
-    padding: 1.5%;
+    padding: 3%;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
