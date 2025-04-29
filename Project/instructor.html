@@ -1,14 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>  <!--Setup-->
+<head>   <!--Setup and linking relevant pages-->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Instructor DashBoard</title>
+    <h1>Welcome Instructor</h1>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="Login" href="index.html"/>
 </head>
 <body>
-  
-        
+    <div class="menu">  <!--Menu for student page options-->
+    <div class="box">  <!--Box class provides background box for css purposes-->
+    <button class="men viewtop">Create Thesis Topic</button>  <!--Create Thesis Topic-->
+    <br/>
+    <button class="men prof">View Thesis Topics</button>   <!--View Thesis Topics-->
+    <br/>
+</div>
+</div>
+    <form>  <!--Log out button to return to Login Page-->
+        <button class="out" type="submit" formaction="index.html">Log Out</button>
+    </form>
 
-    </div>
+    <script src="app.js" defer></script> <!--Lets all elements load before javascript code kicks in-->
 </body>
 </html>
