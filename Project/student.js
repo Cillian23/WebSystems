@@ -10,19 +10,23 @@ const thesStatus = document.querySelectorAll('.thesis');
 const popVisi = document.querySelector('.popup');
 const popCanc = document.querySelector('button.popbtn');
 let theStatus=0;
+ // To distinguish between popup on different pages, arbtitrarily; student=0, secretary=1, instructor=2
 
-//Add event listeners for student page, only work if popup menu is currently inactive
+//Add event listeners for student page, only work if popup menu is currently inactive----------------------------------------------------------------------
 
-popCanc.addEventListener('click', () => {     //Adding X out button for each menu, which turns off all menus, stops buttons interferinf with each other 
-    popVisi.classList.toggle('inactive');
-    popVisi.classList.toggle('active');
-    studentTopic.classList.remove('active');
-    profile.classList.remove('active');
-    thesStatus[theStatus].classList.remove('active');
-    studentTopic.classList.add('inactive');
-    profile.classList.add('inactive');
-    thesStatus[theStatus].classList.add('inactive');
-})
+popCanc.addEventListener('click', () => {     //Adding X out button for each menu, which turns off all menus, stops buttons interfering with each other 
+    
+        popVisi.classList.toggle('inactive');
+        popVisi.classList.toggle('active');
+        studentTopic.classList.remove('active');
+        profile.classList.remove('active');
+        thesStatus[theStatus].classList.remove('active');
+        studentTopic.classList.add('inactive');
+        profile.classList.add('inactive');
+        thesStatus[theStatus].classList.add('inactive');
+});
+
+//Student page buttons -------------------------------------------------------------------------------------------------------------------------------
 viewTopic.addEventListener('click', () => {      //Button for viewing thesis topic
     if(popVisi.classList.contains('inactive')){
 
@@ -61,6 +65,8 @@ viewThesis.addEventListener('click', () => {  //Button for viewing thesis status
         popVisi.classList.toggle('active');
     }  
 });
+
+
 
 
 //Endpoint
