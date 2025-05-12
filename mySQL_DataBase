@@ -1,0 +1,98 @@
+DROP TABLE IF EXISTS `student`;
+
+CREATE TABLE student (
+id INT(8) NOT NULL,
+username VARCHAR(40) NOT NULL,
+password VARCHAR(40) NOT NULL,
+email VARCHAR(40),
+first_name VARCHAR(50),
+last_name VARCHAR(50),
+major VARCHAR(50),
+PRIMARY KEY (id),
+UNIQUE KEY (username)
+);
+
+DROP TABLE IF EXISTS `staff`;
+
+CREATE TABLE staff (
+id INT(6) NOT NULL,
+username VARCHAR(40) NOT NULL,
+password VARCHAR(40) NOT NULL,
+email VARCHAR(40),
+first_name VARCHAR(50),
+last_name VARCHAR(50),
+department VARCHAR(50),
+PRIMARY KEY (id),
+UNIQUE KEY (username)
+);
+
+DROP TABLE IF EXISTS `secretary`;
+
+CREATE TABLE secretary (
+    sec_id INT(6) NOT NULL,
+    first_name VARCHAR(50),
+    email VARCHAR(40),
+    department VARCHAR(50),
+    PRIMARY KEY (sec_id),
+    CONSTRAINT `secID` FOREIGN KEY (`sec_id`) REFERENCES `staff`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS `professor`;
+
+CREATE TABLE professor (
+prof_id INT(6) NOT NULL,
+first_name VARCHAR(50),
+email VARCHAR(40),
+department VARCHAR(50),
+PRIMARY KEY (prof_id),
+CONSTRAINT `profID` FOREIGN KEY (`prof_id`) REFERENCES `staff`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS `thesis`;
+
+CREATE TABLE thesis (
+stud_id INT(8) NOT NULL,
+thes_id INT(10) NOT NULL,
+sup_id INT(6),
+subject VARCHAR(50) NOT NULL,
+status ENUM ("assigning", "active", "examining", "completed"),
+grade INT(3),
+PRIMARY KEY(stud_id, thes_id),
+UNIQUE KEY(thes_id),
+CONSTRAINT `auth` FOREIGN KEY (`stud_id`) REFERENCES student(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS `supervised`;
+
+CREATE TABLE supervised (
+sup_id INT(6) NOT NULL,
+thesis_id INT(10) NOT NULL,
+PRIMARY KEY (sup_id, thesis_id),
+CONSTRAINT `supervisor` FOREIGN KEY (`sup_id`) REFERENCES professor(`prof_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+CONSTRAINT `thesis` FOREIGN KEY (`thesis_id`) REFERENCES thesis(`thes_id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS `comp_thes`;
+
+CREATE TABLE comp_thes (
+thesis_id INT(10) NOT NULL,
+sup_id INT(6),
+subject VARCHAR(50),
+grade INT(3),
+PRIMARY KEY (thesis_id)
+);
+
+DROP TRIGGER IF EXISTS `thesis_complete`;
+
+DELIMITER $$
+CREATE TRIGGER thesis_complete
+AFTER UPDATE ON thesis
+FOR EACH ROW
+BEGIN
+IF new.status = "completed" THEN
+INSERT INTO comp_thes VALUES (new.thes_id, new.sup_id, new.subject, new.grade);
+END IF;
+END$$
+DELIMITER ;
+
+
