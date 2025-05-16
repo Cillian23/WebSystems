@@ -10,7 +10,7 @@
 </head>
 <body>
   <div class="box">   <!--Box class provides background box for css purposes-->
-    <form class="popup">  <!--Popup contains all menu options within a central popup-->
+    <form class="popup" id="form" >  <!--Popup contains all menu options within a central popup-->
     <label for="uname"> <b>Enter username:</b> </label>  <!--Enter username-->
     <input
       type="text"
@@ -25,11 +25,31 @@
       name="password"
       placeholder="*********"/>
       <br/>
+      
 
-    <button type="submit" formaction="student.html">Login</button>  <!--Loads Student page on login, obviously not permanent-->
+    <button type="submit" >Login</button>  
 
-  </script>
-   <!-- <script src = "app.js"></script>  Refers to javascript file for instructions-->
+    <script>               <!--This currently saves the input in local storage and redirects to student page where it can be used-->
+      const form = document.getElementById('form');
+      const userName = document.getElementById('uname');
+      const password = document.getElementById('pword');
+
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const userNameValue = userName.value;
+        const passwordValue = password.value;
+
+        localStorage.setItem('username', userNameValue);
+        localStorage.setItem('password', passwordValue);
+        location.href = 'student.html';
+      })
+
+      
+    </script>
+
+  
+   <!--<script src = "student.js" defer></script>-->  
     
 </body>
 </html>

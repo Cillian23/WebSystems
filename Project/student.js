@@ -10,9 +10,13 @@ const thesStatus = document.querySelectorAll('.thesis');
 const popVisi = document.querySelector('.popup');
 const popCanc = document.querySelector('button.popbtn');
 let theStatus=0;
+// Retreiving username and password from local storage
+const username = localStorage.getItem('username');
+const password = localStorage.getItem('password');
+console.log(username);
+console.log(password);
 
- // To distinguish between popup on different pages, arbtitrarily; student=0, secretary=1, instructor=2
-
+//Fetch data from database through api address, currently just gets all students in database
 fetch('http://localhost:3000/api/users')
   .then(res => res.json())
   .then(data => {
