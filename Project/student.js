@@ -10,7 +10,16 @@ const thesStatus = document.querySelectorAll('.thesis');
 const popVisi = document.querySelector('.popup');
 const popCanc = document.querySelector('button.popbtn');
 let theStatus=0;
+
  // To distinguish between popup on different pages, arbtitrarily; student=0, secretary=1, instructor=2
+
+fetch('http://localhost:3000/api/users')
+  .then(res => res.json())
+  .then(data => {
+    console.log(data); // handle it in DOM
+  })
+  .catch(err => console.error(err));
+
 
 //Add event listeners for student page, only work if popup menu is currently inactive----------------------------------------------------------------------
 

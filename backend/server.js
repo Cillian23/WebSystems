@@ -43,12 +43,15 @@ db.connect(err => {
 
 // Example Route
 app.get('/api/users', (req, res) => {
-  db.query('SELECT * FROM users', (err, results) => {
+  db.query('SELECT * FROM student', (err, results) => {
     if (err) return res.status(500).send(err);
     res.json(results);
+    return results;
   });
 });
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
+
+
