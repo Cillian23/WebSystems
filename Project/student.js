@@ -1,3 +1,4 @@
+//SET-UP ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
 console.log("Running");
 const viewTopic = document.querySelector('button.men.viewtop');
@@ -10,19 +11,48 @@ const thesStatus = document.querySelectorAll('.thesis');
 const popVisi = document.querySelector('.popup');
 const popCanc = document.querySelector('button.popbtn');
 let theStatus=0;
-// Retreiving username and password from local storage
-const username = localStorage.getItem('username');
-const password = localStorage.getItem('password');
-console.log(username);
-console.log(password);
+// Retreiving username and password from local storage as an object, helps in fetch call -------------------------------------------------------------------------------
 
-//Fetch data from database through api address, currently just gets all students in database
-fetch('http://localhost:3000/api/users')
+const userData = {
+  username: localStorage.getItem('username'),
+  password: localStorage.getItem('password')
+};
+console.log(userData.username);
+
+//Fetch data from database through api address, currently just gets all students in database ------------------------------------------------------------------------
+
+
+/*fetch('http://localhost:3000/api/users', username)           OLD FETCH CODE, KEEPING AS TEMPLATE FOR NOW
   .then(res => res.json())
   .then(data => {
     console.log(data); // handle it in DOM
   })
-  .catch(err => console.error(err));
+  .catch(err => console.error(err));*/
+
+
+// Actual fetch code, passes in username and password
+fetch('http://localhost:3000/api/users/search', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(userData)                  //pass in string version of data from the user object
+})
+  .then(res => {
+    if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`);   //error if fetch result doesn't work
+    }
+    else if(res.json == null){
+        location.href = 'index.html';  //if nothing is returned i.e. username/password wrong, go back to login, not currently working :(
+    }
+    else {
+    return res.json();   //if it works return json version
+    }
+  })
+  .then(data => {
+    console.log(data);     //print returned data
+  })
+  .catch(err => console.error('Error:', err));  //catch errors
 
 
 //Add event listeners for student page, only work if popup menu is currently inactive----------------------------------------------------------------------
