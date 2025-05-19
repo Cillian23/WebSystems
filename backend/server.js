@@ -71,6 +71,27 @@ app.post('/api/users/search', (req, res) => {
   );
 });
 
+app.post('/api/users/thesis', (req, res) => {
+  const {stud_id} = req.body;
+  console.log(stud_id);
+  if (!stud_id) {
+    console.log('fucked it');
+    return res.status(400).json({ error: 'No student ID' });
+  }
+
+  db.query('SELECT * FROM thesis WHERE stud_id = ?', 
+    [stud_id], 
+    (err, results) => {
+      if (err) {
+        console.log('propa fucked');
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(results);
+    }
+  );
+});
+
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });

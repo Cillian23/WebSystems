@@ -19,6 +19,9 @@ const userData = {
 };
 console.log(userData.username);
 
+var IDnumber = {
+ stud_id: null
+ } //initialise the variable for id number 
 //Fetch data from database through api address, currently just gets all students in database ------------------------------------------------------------------------
 
 
@@ -42,18 +45,21 @@ fetch('http://localhost:3000/api/users/search', {
     if (!res.ok) {
       throw new Error(`HTTP error! Status: ${res.status}`);   //error if fetch result doesn't work
     }
-    else if(res.json == null){
-        location.href = 'index.html';  //if nothing is returned i.e. username/password wrong, go back to login, not currently working :(
-    }
     else {
     return res.json();   //if it works return json version
     }
   })
   .then(data => {
+    if (data[0] == null){
+      location.href = 'index.html';       //return to login screen if not valid user, maybe move this into login page, so next page never loads at all, probs have to for staff users sake
+    }
+    else {
     console.log(data);     //print returned data
+    IDnumber.stud_id = data[0].id;
+    console.log(IDnumber.stud_id);
+    }
   })
   .catch(err => console.error('Error:', err));  //catch errors
-
 
 //Add event listeners for student page, only work if popup menu is currently inactive----------------------------------------------------------------------
 
@@ -78,6 +84,25 @@ viewTopic.addEventListener('click', () => {      //Button for viewing thesis top
         popVisi.classList.toggle('inactive');
         popVisi.classList.toggle('active');
     }       
+    fetch('http://localhost:3000/api/users/thesis', {  //Fetch data for thesis, currrently only prints it in console
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(IDnumber)                  //pass in string version of data from the user object
+}) 
+.then(res => {
+    if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`);   //error if fetch result doesn't work
+    }
+    else {
+    return res.json();   //if it works return json version
+    }
+  })
+  .then(data => {
+    console.log(data);     //print returned data
+  })
+  .catch(err => console.error('Error:', err));
 });
 
 editPro.addEventListener('click', () => {     // Button for editing profile details
