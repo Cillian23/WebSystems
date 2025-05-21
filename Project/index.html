@@ -29,22 +29,66 @@
 
     <button type="submit" >Login</button>  
 
-    <script>               <!--This currently saves the input in local storage and redirects to student page where it can be used-->
+    <script>               //Set up relevant JS code in order to check if user is valid, then bring to relevant html page, working for student current;y
       const form = document.getElementById('form');
       const userName = document.getElementById('uname');
       const password = document.getElementById('pword');
-
+     
+      var userType; //Set up user type so we can differ between student/professor/secretary
+//When Log In button is pressed, checks if the user is in DB, passes necessary details into local storage, not password --------------------------------------------------------
       form.addEventListener('submit', function(e) {
         e.preventDefault();
+       
 
         const userNameValue = userName.value;
         const passwordValue = password.value;
+         const userData = {
+        username: userNameValue,
+        password: passwordValue
+         }
+          console.log(userData);
 
-        localStorage.setItem('username', userNameValue);
-        localStorage.setItem('password', passwordValue);
-        location.href = 'student.html';
+        localStorage.setItem('username', userName);
+        
+//Verify user is in the database -----------------------------------------------------------------------------------------------------------------------------
+      fetch('http://localhost:3000/api/users/search', {
+        method: 'POST',
+        headers: {
+         'Content-Type': 'application/json'
+       },
+       body: JSON.stringify(userData)                  //pass in string version of data from the user object
+      })
+      .then(res => {
+        if (!res.ok) {
+         throw new Error(`HTTP error! Status: ${res.status}`);   //error if fetch result doesn't work
+       }
+       else {
+        return res.json();   //if it works return json version
+       }
+      })  
+      //Steps after successful fetch 
+      .then(data => {
+        if (data[0] == null){
+          location.href = 'index.html';       //return to login screen if not valid user
+        }
+        else {
+        console.log(data);     //print returned data
+        localStorage.setItem('IDnumber', data[0].id);
+        userType = data[0].user_type;  //Set user type to correct one
+        console.log(data[0].id);
+        //Set relevant details to local storage for retrieval in student.js
+        localStorage.setItem('PostAddr', data[0].PostAddr);
+        localStorage.setItem('Email', data[0].email);
+        localStorage.setItem('mobileNum', data[0].mobileNum);
+        localStorage.setItem('landlineNum', data[0].landlineNum);
+        location.href = `${userType}.html`;          //Change to relevant page//In db have student/professor/secretary, in project have student/instructor/secretariat, have to change one
+
+        }
+      })
+      .catch(err => console.error('Error:', err));  //catch errors
       })
 
+         
       
     </script>
 

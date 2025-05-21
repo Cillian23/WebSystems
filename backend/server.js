@@ -15,7 +15,9 @@ const app = express();
 const port = 3000;
 
 console.log('DB_USER:', process.env.DB_USER);
+console.log('DB_USER:', process.env.DB_NAME);
 
+  var username1;    //initialise username for update on each user
 
 
 
@@ -51,15 +53,17 @@ db.connect(err => {
     console.log(req);
   });
 });*/
-app.post('/api/users/search', (req, res) => {
+app.post('/api/users/search', (req, res) => {     //Queries database for student details after username and password are used to log in
   const { username, password } = req.body;
-  
+  //username1=username;
+  console.log(req.body);
   // Both parameters are required
   if (!username || !password) {
+    console.log("shite");
     return res.status(400).json({ error: 'Username/Password are incorrect' });
   }
   
-  db.query('SELECT * FROM student WHERE username = ? AND password = ?', 
+  db.query('SELECT * FROM user WHERE username = ? AND password = ?', 
     [username, password], 
     (err, results) => {
       if (err) {
@@ -71,7 +75,7 @@ app.post('/api/users/search', (req, res) => {
   );
 });
 
-app.post('/api/users/thesis', (req, res) => {
+app.post('/api/users/thesis', (req, res) => {    //Queries database for thesis details once student id is passed in, for access from student page, view thesis button
   const {stud_id} = req.body;
   console.log(stud_id);
   if (!stud_id) {
@@ -92,7 +96,43 @@ app.post('/api/users/thesis', (req, res) => {
   );
 });
 
-app.listen(port, () => {
+// IT WORKS!!!! Update saved details in database
+app.post('/api/users/UpdateStudDeets', (req, res) => {    //Updates saved details in edit profile section, sends new details to database
+  const {PostAddr, email, mobileNum, landlineNum} = req.body;
+  console.log(PostAddr);
+  var username = username1;
+
+  db.query('UPDATE user SET PostAddr = ?, email = ?, mobileNum = ?, landlineNum = ? WHERE username = ?', 
+    [PostAddr, email, mobileNum, landlineNum, username], 
+    (err, results) => {
+      if (err) {
+        console.log('propa fucked');
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(results);
+    }
+  );
+});
+
+
+//Don't think this is actually necessary, all data loaded in at start, only need to send back updated details
+/*app.post('/api/users/search', (req, res) => {     //Queries database for profile details e.g. address and number after student clicks edit profile
+  const { PostAddr, email, mobileNum, landlineNum } = req.body;
+  
+  db.query('SELECT  FROM student WHERE username = ? AND password = ?', 
+    [username, password], 
+    (err, results) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(results);
+    }
+  );
+}); */
+
+app.listen(port, () => {                                 //Confirms connection to database
   console.log(`Server running on http://localhost:${port}`);
 });
 
