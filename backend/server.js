@@ -83,7 +83,7 @@ app.post('/api/users/thesis', (req, res) => {    //Queries database for thesis d
     return res.status(400).json({ error: 'No student ID' });
   }
 
-  db.query('SELECT * FROM thesis WHERE stud_id = ?', 
+  db.query('SELECT topic, status, key_sup, sup2_id, sup3_id FROM thesis WHERE stud_id = ?', 
     [stud_id], 
     (err, results) => {
       if (err) {

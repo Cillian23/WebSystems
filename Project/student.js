@@ -12,15 +12,7 @@ const thesStatus = document.querySelectorAll('.thesis');
 const popVisi = document.querySelector('.popup');
 const popCanc = document.querySelector('button.popbtn');
 let theStatus=0;
-// Retreiving username and password from local storage as an object, helps in fetch call -------------------------------------------------------------------------------
-
-/*const userData1 = {
-  username: localStorage.getItem('username')
-  //id: localStorage.getItem('IDnumber'),
-
-};*/
-//console.log(userData.username);
-
+// Retreiving username and details from local storage as an object, helps in fetch calls -------------------------------------------------------------------------------
 var IDnumber = {      //initialise the variable for id number 
  stud_id: localStorage.getItem('IDnumber')
  } 
@@ -42,39 +34,10 @@ var IDnumber = {      //initialise the variable for id number
   })
   .catch(err => console.error(err));*/
 
+  
 
-// Actual fetch code, passes in username and password
-/*fetch('http://localhost:3000/api/users/search', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify(userData1)                  //pass in string version of data from the user object
-})
-  .then(res => {
-    if (!res.ok) {
-      throw new Error(`HTTP error! Status: ${res.status}`);   //error if fetch result doesn't work
-    }
-    else {
-    return res.json();   //if it works return json version
-    }
-  })
-  .then(data => {
-    if (data[0] == null){
-      location.href = 'index.html';       //return to login screen if not valid user, maybe move this into login page, so next page never loads at all, probs have to for staff users sake
-    }
-    else {
-    console.log(data);     //print returned data
-    IDnumber.stud_id = data[0].id;
-    console.log(IDnumber.stud_id);
-    ProfDetails.PostAddr=data[0].PostAddr;
-    ProfDetails.email=data[0].email;
-    ProfDetails.mobileNum=data[0].mobileNum;
-    ProfDetails.landlineNum=data[0].landlineNum;
-    }
-  })
-  .catch(err => console.error('Error:', err));  //catch errors
-*/
+
+
 
 //Add event listeners for student page, only work if popup menu is currently inactive----------------------------------------------------------------------
 
@@ -114,8 +77,28 @@ viewTopic.addEventListener('click', () => {      //Button for viewing thesis top
     return res.json();   //if it works return json version
     }
   })
-  .then(data => {
-    console.log(data);     //print returned data
+  .then(data => {                  //Change thesis details displayed to relevant student's
+    console.log(data);  
+    if (data[0].topic == null){    //If statements so it only displays when there is actually content to display
+      document.getElementById('topicVAR').innerText = 'unassigned'
+    }   
+    else {
+      document.getElementById('topicVAR').innerText = data[0].topic;
+    }
+    if (data[0].key_sup == null){
+      document.getElementById('keySup').innerText = 'unassigned'
+    }   
+    else {
+      document.getElementById('keySup').innerText = data[0].key_sup;
+    }
+    if (data[0].sup2_id == null || data[0].sup3_id == null){
+      document.getElementById('otherSups').innerText = 'not assigned yet'
+    }   
+    else {
+      document.getElementById('otherSups').innerText = `${data[0].sup2_id} and ${data[0].sup3_id}`;
+    }
+    console.log(document.getElementById('topicVAR').value); //Just to see what comes through for debugging
+    console.log(document.getElementById('keySup'));
   })
   .catch(err => console.error('Error:', err));
 });
