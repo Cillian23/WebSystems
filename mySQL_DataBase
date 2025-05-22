@@ -1,3 +1,26 @@
+WebSystems DB
+Still need to create triggers so sub tables of user are remaining consistent
+
+
+DROP TABLE IF EXISTS `user`;
+
+CREATE TABLE user (
+id INT(10) NOT NULL, 
+first_name VARCHAR(50),
+last_name VARCHAR(50),
+major VARCHAR(50),
+department VARCHAR(50),
+email VARCHAR(40),
+password VARCHAR(40),
+username VARCHAR(40),
+mobileNum INT(20),
+landlineNum INT(20),
+PostAddr VARCHAR(250),
+userType ENUM("student", "professor", "secretary") NOT NULL,
+PRIMARY KEY (id),
+UNIQUE KEY (username)
+);
+
 DROP TABLE IF EXISTS `student`;
 
 CREATE TABLE student (
@@ -8,6 +31,9 @@ email VARCHAR(40),
 first_name VARCHAR(50),
 last_name VARCHAR(50),
 major VARCHAR(50),
+mobileNum INT(10),
+landlineNum INT(10),
+PostAddr VARCHAR(250),
 PRIMARY KEY (id),
 UNIQUE KEY (username)
 );
@@ -15,7 +41,7 @@ UNIQUE KEY (username)
 DROP TABLE IF EXISTS `staff`;
 
 CREATE TABLE staff (
-id INT(6) NOT NULL,
+id INT(10) NOT NULL,
 username VARCHAR(40) NOT NULL,
 password VARCHAR(40) NOT NULL,
 email VARCHAR(40),
@@ -29,7 +55,7 @@ UNIQUE KEY (username)
 DROP TABLE IF EXISTS `secretary`;
 
 CREATE TABLE secretary (
-    sec_id INT(6) NOT NULL,
+    sec_id INT(10) NOT NULL,
     first_name VARCHAR(50),
     email VARCHAR(40),
     department VARCHAR(50),
@@ -40,7 +66,7 @@ CREATE TABLE secretary (
 DROP TABLE IF EXISTS `professor`;
 
 CREATE TABLE professor (
-prof_id INT(6) NOT NULL,
+prof_id INT(10) NOT NULL,
 first_name VARCHAR(50),
 email VARCHAR(40),
 department VARCHAR(50),
@@ -82,6 +108,14 @@ grade INT(3),
 PRIMARY KEY (thesis_id)
 );
 
+DROP TABLE IF EXISTS `topics`;
+
+CREATE TABLE topics (
+topic VARCHAR(60) NOT NULL,
+department VARCHAR(50),
+PRIMARY KEY (topic)
+);
+
 DROP TRIGGER IF EXISTS `thesis_complete`;
 
 DELIMITER $$
@@ -95,4 +129,29 @@ END IF;
 END$$
 DELIMITER ;
 
+DROP TRIGGER IF EXISTS `user_bucket`;
+
+DELIMITER $$
+CREATE TRIGGER user_bucket
+AFTER INSERT ON user
+FOR EACH ROW
+BEGIN
+IF new.user_type = "student" THEN
+INSERT INTO student VALUES (new.id, new.username, new.password, new.email, new.first_name, new.last_name, new.major, new.mobileNum, new.landlineNum, new.PostAddr);
+END IF;
+IF new.user_type = "professor" THEN
+INSERT INTO staff VALUES (new.id, new.username, new.password, new.email, new.first_name, new.last_name, new.department);
+INSERT INTO professor VALUES (new.id, new.first_name, new.email, new.department);
+END IF;
+IF new.user_type = "secretary" THEN
+INSERT INTO staff VALUES (new.id, new.username, new.password, new.email, new.first_name, new.last_name, new.department);
+INSERT INTO secretary VALUES (new.id, new.first_name, new.email, new.department);
+END IF;
+END$$
+DELIMITER ;
+
+
+
+
+																																																																																														
 
