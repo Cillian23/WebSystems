@@ -11,6 +11,7 @@ const viewThesis = document.querySelector('button.men.thes');
 const thesStatus = document.querySelectorAll('.thesis');
 const popVisi = document.querySelector('.popup');
 const popCanc = document.querySelector('button.popbtn');
+const SelectInstructors = document.querySelector('button[name="SubProfs"]');
 let theStatus=0;
 // Retreiving username and details from local storage as an object, helps in fetch calls -------------------------------------------------------------------------------
 var IDnumber = {      //initialise the variable for id number 
@@ -62,7 +63,7 @@ viewTopic.addEventListener('click', () => {      //Button for viewing thesis top
         popVisi.classList.toggle('inactive');
         popVisi.classList.toggle('active');
     }       
-    fetch('http://localhost:3000/api/users/thesis', {  //Fetch data for thesis, currrently only prints it in console
+    fetch('http://localhost:3000/api/users/thesis', {  
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
@@ -187,6 +188,40 @@ viewThesis.addEventListener('click', () => {  //Button for viewing thesis status
         popVisi.classList.toggle('inactive');
         popVisi.classList.toggle('active');
     }  
+
+});
+
+SelectInstructors.addEventListener('click', () => {    // Sending entered instructors to DB so they can accept/reject
+    console.log(document.getElementById('KeyProf').value);
+    console.log(document.getElementById('Prof2').value); //Checking they're taken in
+    console.log(document.getElementById('Prof3').value);
+    var prefInstructors = {                              // passing values into object for fetch request
+      KeyProf: document.getElementById('KeyProf').value, 
+      prof2: document.getElementById('Prof2').value,
+      prof3: document.getElementById('Prof3').value,
+      stud_id: IDnumber.stud_id
+    }
+    console.log(prefInstructors.stud_id);
+
+      fetch('http://localhost:3000/api/users/SubmitPrefInstructors', {  //Send saved data to backend, where it updates database
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(prefInstructors)                  //pass in string version of data from the profile details object
+}) 
+.then(res => {
+    if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`);   //error if fetch result doesn't work
+    }
+    else {
+    return res.json();   //if it works return json version
+    }
+  })
+  .then(data => {
+    console.log(data);     //print returned data in console, just saying sql message that it's changed
+  })
+  .catch(err => console.error('Error:', err));
 });
 
 

@@ -15,7 +15,7 @@ const app = express();
 const port = 3000;
 
 console.log('DB_USER:', process.env.DB_USER);
-console.log('DB_USER:', process.env.DB_NAME);
+console.log('DB_NAME:', process.env.DB_NAME);
 
   var username1;    //initialise username for update on each user
 
@@ -113,6 +113,58 @@ app.post('/api/users/UpdateStudDeets', (req, res) => {    //Updates saved detail
       res.json(results);
     }
   );
+});
+
+app.post('/api/users/SubmitPrefInstructors', (req, res) => { // Takes emails of preferred professors from frontend, finds relevant IDs, adds all to pending_thes table in DB--------
+  console.log('called');                                      //DB Queries are nested so they work in order, promise probably better, CBA
+  const {KeyProf, prof2, prof3, stud_id} = req.body;
+  console.log(stud_id);
+  var keyProf_id;
+  var Prof2_id;
+  var Prof3_id;
+  db.query('SELECT prof_id FROM professor WHERE email = ?',
+    [KeyProf],
+    (err, results) => {
+      if (err) {
+        console.log('KeyProf email not found');
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      console.log(results);     //Just to see the results
+      keyProf_id = results[0].prof_id;    // Key professors id taken for use in creating values later
+      console.log(typeof keyProf_id);
+    
+  
+      db.query('SELECT prof_id FROM professor WHERE email = ? OR email = ?',
+        [prof2, prof3],
+        (err, results) => {
+          if (err) {
+            console.log('Profs email not found');
+            console.error('Database error:', err);
+            return res.status(500).json({ error: 'Database error' });
+          }
+          console.log(results); //Just to see the results
+          Prof2_id = Object.values(results[0])[0];  // Other professors ids taken for use in creating values later
+          Prof3_id = Object.values(results[1])[0];
+          console.log(typeof Prof2_id);  
+          console.log(Prof3_id);  
+        
+      
+    
+    
+         db.query('INSERT INTO pending_thes VALUES (?, ?, ?, ?, "Waiting", "Waiting", "Waiting")', //Take student ID, professors IDs, add to pending thesis table
+           [stud_id, keyProf_id, Prof2_id, Prof3_id],
+           (err, results) => {
+             if(err) {
+               console.log('Insertion unsuccessful');
+               console.error('Database error:', err);
+               return res.status(500).json({ error: 'Database error' });
+             }
+             res.json(results);
+           }
+      );
+    });
+  });
 });
 
 
