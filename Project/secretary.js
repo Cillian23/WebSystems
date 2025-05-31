@@ -8,6 +8,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const mangThes = document.querySelector('button.men.thesmang');
     const mangThes1 = document.querySelector('.thesmanage');
 
+
+fetch('http://localhost:3000/api/users')
+  .then(res => res.json())
+  .then(data => {
+    console.log(data); // handle it in DOM
+  })
+  .catch(err => console.error(err));
+
 //Add event listeners for Secretariat page, only work if popup menu is currently inactive----------------------------------------------------------------------
 
     popCanc.addEventListener('click', () => {     //Adding X out button for each menu, which turns off all menus, stops buttons interfering with each other 
