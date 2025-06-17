@@ -28,10 +28,35 @@
 </div>
 </div>
 
+<div class="box">  <!--Box class provides background box for css purposes-->
+<div class="popup inactive">  <!--Popup contains all menu options within a central popup-->
+    <button class="popbtn">X</button>
+
+    <div class="TopicCreate inactive">
+        <label for="topTitle">Topic Title</label>
+        <input type="text" name="topTitle" id="topTitle"/>
+        <br/>
+        <label for="topDesc">Topic Description</label>
+        <input type="text" class="descBox" name="topDesc" id="topDesc"/>
+        <br/>
+        <label for="topFile">Attach file</label>
+        <input type="file" name="topFile" id="topFile"/>
+        <br/>
+        <button type="submit" name="SubTopic">Save</button>
+    </div>
+    
+    <div class="PendingInvites inactive">
+        
+    </div>
+
+</div>
+</div>
+
+
     <form>  <!--Log out button to return to Login Page-->
         <button class="out" type="submit" formaction="index.html">Log Out</button>
     </form>
 
-    <script src="app.js" defer></script> <!--Lets all elements load before javascript code kicks in-->
+    <script src="professor.js" defer></script> <!--Lets all elements load before javascript code kicks in-->
 </body>
 </html>

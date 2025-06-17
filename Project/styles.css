@@ -44,6 +44,13 @@ input[type=text], input[type=password]{  /*Input boxes have certain style, for t
     
 }
 
+input[type=text].descBox{
+    padding: 40px 40px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+}
+
 button{  /*Generalised design for buttons without more specific instructions*/
    background-color: #04AA6D;
     color: white;
@@ -77,6 +84,13 @@ button.popbtn{  /*X-out button in top right corner, not working currently lol*/
 
 .box{  /*Background grey area for elements*/
    background-color: rgba(223, 194, 194, 0.5);
+   color: #fff;
+   border-radius: 10px;
+   padding: 10px 10px;
+}
+
+.box.invite{
+   background-color: rgba(17, 17, 17, 0.5);
    color: #fff;
    border-radius: 10px;
    padding: 10px 10px;

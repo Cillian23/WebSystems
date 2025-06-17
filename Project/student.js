@@ -63,7 +63,7 @@ viewTopic.addEventListener('click', () => {      //Button for viewing thesis top
         popVisi.classList.toggle('inactive');
         popVisi.classList.toggle('active');
     }       
-    fetch('http://localhost:3000/api/users/thesis', {  
+    fetch('http://localhost:3000/api/users/thesis1', {  
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
@@ -86,11 +86,11 @@ viewTopic.addEventListener('click', () => {      //Button for viewing thesis top
     else {
       document.getElementById('topicVAR').innerText = data[0].topic;
     }
-    if (data[0].key_sup == null){
+    if (data[0].Keysup_id == null){
       document.getElementById('keySup').innerText = 'unassigned'
     }   
     else {
-      document.getElementById('keySup').innerText = data[0].key_sup;
+      document.getElementById('keySup').innerText = `${data[0].first_name} ${data[0].last_name}`;
     }
     if (data[0].sup2_id == null || data[0].sup3_id == null){
       document.getElementById('otherSups').innerText = 'not assigned yet'
@@ -190,13 +190,10 @@ viewThesis.addEventListener('click', () => {  //Button for viewing thesis status
     }  
 
 });
-
 SelectInstructors.addEventListener('click', () => {    // Sending entered instructors to DB so they can accept/reject
-    console.log(document.getElementById('KeyProf').value);
     console.log(document.getElementById('Prof2').value); //Checking they're taken in
     console.log(document.getElementById('Prof3').value);
-    var prefInstructors = {                              // passing values into object for fetch request
-      KeyProf: document.getElementById('KeyProf').value, 
+    var prefInstructors = {                              // passing values into object for fetch request 
       prof2: document.getElementById('Prof2').value,
       prof3: document.getElementById('Prof3').value,
       stud_id: IDnumber.stud_id

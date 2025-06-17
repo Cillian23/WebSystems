@@ -75,7 +75,7 @@ app.post('/api/users/search', (req, res) => {     //Queries database for student
   );
 });
 
-app.post('/api/users/thesis', (req, res) => {    //Queries database for thesis details once student id is passed in, for access from student page, view thesis button
+app.post('/api/users/thesis1', (req, res) => {    //Queries database for thesis details once student id is passed in, for access from student page, view thesis button
   const {stud_id} = req.body;
   console.log(stud_id);
   if (!stud_id) {
@@ -83,7 +83,7 @@ app.post('/api/users/thesis', (req, res) => {    //Queries database for thesis d
     return res.status(400).json({ error: 'No student ID' });
   }
 
-  db.query('SELECT topic, status, key_sup, sup2_id, sup3_id FROM thesis WHERE stud_id = ?', 
+  db.query('SELECT topic, status, Keysup_id, sup2_id, sup3_id, first_name, last_name FROM thesis JOIN user ON Keysup_id = id WHERE stud_id = ?', 
     [stud_id], 
     (err, results) => {
       if (err) {
@@ -91,7 +91,9 @@ app.post('/api/users/thesis', (req, res) => {    //Queries database for thesis d
         console.error('Database error:', err);
         return res.status(500).json({ error: 'Database error' });
       }
+      console.log(results);
       res.json(results);
+      
     }
   );
 });
@@ -115,24 +117,24 @@ app.post('/api/users/UpdateStudDeets', (req, res) => {    //Updates saved detail
   );
 });
 
+
 app.post('/api/users/SubmitPrefInstructors', (req, res) => { // Takes emails of preferred professors from frontend, finds relevant IDs, adds all to pending_thes table in DB--------
   console.log('called');                                      //DB Queries are nested so they work in order, promise probably better, CBA
-  const {KeyProf, prof2, prof3, stud_id} = req.body;
+  const {prof2, prof3, stud_id} = req.body;
   console.log(stud_id);
-  var keyProf_id;
+  var thes_id;
   var Prof2_id;
   var Prof3_id;
-  db.query('SELECT prof_id FROM professor WHERE email = ?',
-    [KeyProf],
+  db.query('SELECT thes_id FROM thesis WHERE stud_id = ?',
+    [stud_id],
     (err, results) => {
       if (err) {
-        console.log('KeyProf email not found');
+        console.log('Thesis not found');
         console.error('Database error:', err);
         return res.status(500).json({ error: 'Database error' });
       }
       console.log(results);     //Just to see the results
-      keyProf_id = results[0].prof_id;    // Key professors id taken for use in creating values later
-      console.log(typeof keyProf_id);
+      thes_id = results[0].thes_id;    // Key professors id taken for use in creating values later
     
   
       db.query('SELECT prof_id FROM professor WHERE email = ? OR email = ?',
@@ -152,8 +154,8 @@ app.post('/api/users/SubmitPrefInstructors', (req, res) => { // Takes emails of 
       
     
     
-         db.query('INSERT INTO pending_thes VALUES (?, ?, ?, ?, "Waiting", "Waiting", "Waiting")', //Take student ID, professors IDs, add to pending thesis table
-           [stud_id, keyProf_id, Prof2_id, Prof3_id],
+         db.query('INSERT INTO pending_thes VALUES (?, ?, ?, ?, "Waiting", "Waiting")', //Take student ID, professors IDs, add to pending thesis table
+           [stud_id, thes_id, Prof2_id, Prof3_id],
            (err, results) => {
              if(err) {
                console.log('Insertion unsuccessful');
@@ -167,6 +169,39 @@ app.post('/api/users/SubmitPrefInstructors', (req, res) => { // Takes emails of 
   });
 });
 
+app.post('/api/users/uploadTopic', (req, res) => {
+  console.log("Called Topic");
+  const {topicTitle, topicDesc, department, prof_id} = req.body;
+   db.query('INSERT INTO topics VALUES (?, ?, ?, ?)', //Add new topic details into the topics table
+           [topicTitle, topicDesc, department, prof_id],
+           (err, results) => {
+             if(err) {
+               console.log('Insertion unsuccessful');
+               console.error('Database error:', err);
+               return res.status(500).json({ error: 'Database error' });
+             }
+             res.json(results);
+           }
+      );
+
+});
+
+app.get('/api/users/invites', (req, res) => {
+  const prof_id = req.query.prof_id;
+
+  db.query('SELECT topic, pending_thes.stud_id FROM pending_thes JOIN thesis ON pending_thes.thes_id = thesis.thes_id WHERE Prof2_id = ? OR Prof3_id = ?;', 
+    [prof_id, prof_id], 
+    (err, results) => {
+      if(err) {
+        console.log('Request unsuccessful');
+        console.error('Database error: ', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(results);
+      console.log(results);
+    }
+  );
+});
 
 //Don't think this is actually necessary, all data loaded in at start, only need to send back updated details
 /*app.post('/api/users/search', (req, res) => {     //Queries database for profile details e.g. address and number after student clicks edit profile
