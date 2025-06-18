@@ -22,7 +22,7 @@ popCanc.addEventListener('click', () => {     //Adding X out button for each men
         TopCreator.classList.add('inactive');
         pendingInvs.classList.add('inactive');
         pendingInvs.classList.add('inactive');
-     /* studentTopic.classList.remove('active');
+     /* studentTopic.classList.remove('active');  //Just a template
         profile.classList.remove('active');
         thesStatus[theStatus].classList.remove('active');
         studentTopic.classList.add('inactive');
@@ -30,7 +30,10 @@ popCanc.addEventListener('click', () => {     //Adding X out button for each men
         thesStatus[theStatus].classList.add('inactive'); */
 });
 
+// Button event listeners ------------------------------------------------------------------------------------------------------------------------------------------
 
+//Create topic functions -----------------------------------------------------------------------------------------------------------------------------------------
+//Activate popup
 TopCreate.addEventListener('click', () => {
     document.getElementById('topTitle').value=null;  //Replace values so they're blank
     document.getElementById('topDesc').value=null;
@@ -44,7 +47,7 @@ TopCreate.addEventListener('click', () => {
     }
 
 });
-
+//Submitting topic button
 subTopic.addEventListener('click', () => {
     var topicDeets = {
         topicTitle: document.getElementById('topTitle').value,
@@ -79,26 +82,55 @@ subTopic.addEventListener('click', () => {
 
 });
 
-function createDiv(item) {     // Creates HTML elements to display all invites with accept/reject buttons
-    var count = 0;
+//View invitations functions ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+// Creates HTML elements to display all invites with accept/reject buttons, called from event listener
+function createDiv(item, count) {     
 const div = document.createElement('div');
             div.className = 'box invite';
-            div.setAttribute('data-id', `invite${count}`);
+            div.setAttribute('inv-id', `invite${count}`);
             
             div.innerHTML = `
                 <label for="studID">Student ID</label>
                 <div name="studID" class="studentID">${item.stud_id}</div>
                 <label for="topTitle">Topic</label>
                 <div class="TopicTitle">${item.topic}</div>
-                <button type="submit">Accept</button>
-                <button type="submit" class="red">Reject</button>
+                <button class="invAccept ${item.thes_id}" id="inv${count}-accept" type="submit">Accept</button>  
+                <button class="invReject ${item.thes_id} red" id="inv${count}-reject" type="submit">Reject</button>
             `;
-            count++;
+            //Putting thes_id in class list so can be used in responses, there's probably a better way?
             console.log(item.stud_id, item.topic);
             return div;
 
 }
 
+//Sends response of an invite to the database
+function sendResponse(InvResponse){
+  console.log("Sending response");
+  console.log(InvResponse.prof_id);
+  fetch("http://localhost:3000/api/users/acceptORreject", {  
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(InvResponse)                  //pass in string version of data from invresponse
+}) 
+.then(res => {
+    if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`);   //error if fetch result doesn't work
+    }
+    else {
+      console.log("Response sent");
+      return res.json();   //if it works return json version
+    }
+  })
+  .then(data => {
+    console.log(data);     //print returned data in console, just saying sql message that it's changed
+  })
+  .catch(err => console.error('Error:', err));
+}
+
+// Activates popup for invites, checks for invites from db, 
 viewInvs.addEventListener('click', () => {
         var prof_id = profID;
         pendingInvs.innerHTML = ' ';
@@ -112,18 +144,51 @@ viewInvs.addEventListener('click', () => {
     return res.json();   //if it works return json version
     }
   })
-   /* .then(data => {
-        console.log(data)     //Display data, 
-    })*/
+
+   //for each invite, create a new html element to display it
     .then( data => {    
         console.log("We're here!!");
-        console.log(data);                        //for each invite, create a new html element to display it
+        console.log(data);                       
+                      let count = 1;
         if (data && data.length > 0 ) {
             data.forEach(item => {
-                const itemElement = createDiv(item);     //call createDiv function to create the elements
-                pendingInvs.append(itemElement);
+                const itemElement = createDiv(item, count);     //call createDiv function to create the elements
+                pendingInvs.append(itemElement);                //Add elements to the overall pending invites
+                console.log("created a div"); 
+                console.log(itemElement.innerHTML);    //Printing just fr debugging
+                count++;
             });      
         }
+        //Adding event listeners to update database
+        const acceptBtns = document.querySelectorAll(`.invAccept`);   //Add event listener for each of the created buttons, accept
+         console.log(acceptBtns);
+         acceptBtns.forEach(button => {
+          button.addEventListener('click', () => {
+            console.log(button.id);
+            console.log(button.classList.item(1));
+            var acceptance = {   //Create object with details to accept invite
+              status: "Accepted",
+              thes_id: button.classList.item(1),
+              prof_id: profID
+            }
+            sendResponse(acceptance);  //Call function to send the response
+            button.classList.add("fade")
+          })
+         })
+         const rejectBtns = document.querySelectorAll(`.invReject`);  //Add event listener for each of the created buttons, reject
+         console.log(rejectBtns);
+         rejectBtns.forEach(button => {
+          button.addEventListener('click', () => {
+            console.log(button.id);
+            var rejection = {            //Create object to reject invite 
+              status: "Rejected",
+              thes_id: button.classList.item(1),
+              prof_id: profID
+            }
+            sendResponse(rejection);   //Call function to send the response
+            button.classList.add("fade")
+          })
+         })
 
     })
     .catch(error => console.error('Error:', error))
@@ -137,7 +202,8 @@ viewInvs.addEventListener('click', () => {
     }
 
 
-})
+
+});
 
 
 //Endpoint

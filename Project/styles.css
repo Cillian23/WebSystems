@@ -72,6 +72,15 @@ button.popbtn{  /*X-out button in top right corner, not working currently lol*/
     top: 0%;
 }
 
+button.red{
+    background-color:rgba(232, 10, 10) ;
+}
+
+button.fade{
+    background: white;
+    background: linear-gradient(90deg,white 0%, rgb(107, 110, 108, 0.3) 100%);
+}
+
 .menu{  /*Have menu class in upper right section of screen*/
     position:fixed;
     top: 10%;
@@ -87,13 +96,15 @@ button.popbtn{  /*X-out button in top right corner, not working currently lol*/
    color: #fff;
    border-radius: 10px;
    padding: 10px 10px;
+    max-height: 50vh;
+   overflow-y: auto;
 }
 
 .box.invite{
    background-color: rgba(17, 17, 17, 0.5);
    color: #fff;
    border-radius: 10px;
-   padding: 10px 10px;
+   margin: 20px 10px;
 }
 .popup{      /*Class to have a popup in the middle of the screen*/
     position: fixed;
@@ -107,6 +118,12 @@ button.popbtn{  /*X-out button in top right corner, not working currently lol*/
     display:flex;
     align-items: left;
     text-align:left;
+    max-height: 40vh;
+   overflow-y: auto;
+}
+/*Scroll colour not working yet*/
+.popup::-webkit-scrollbar-thumb{   
+    color:#04AA6D;   
 }
 
 .out{   /*Logout button*/

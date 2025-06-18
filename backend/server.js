@@ -117,7 +117,7 @@ app.post('/api/users/UpdateStudDeets', (req, res) => {    //Updates saved detail
   );
 });
 
-
+//Select which professors you want, send to pending thesis table
 app.post('/api/users/SubmitPrefInstructors', (req, res) => { // Takes emails of preferred professors from frontend, finds relevant IDs, adds all to pending_thes table in DB--------
   console.log('called');                                      //DB Queries are nested so they work in order, promise probably better, CBA
   const {prof2, prof3, stud_id} = req.body;
@@ -169,6 +169,7 @@ app.post('/api/users/SubmitPrefInstructors', (req, res) => { // Takes emails of 
   });
 });
 
+//Upload a topic to the topics table
 app.post('/api/users/uploadTopic', (req, res) => {
   console.log("Called Topic");
   const {topicTitle, topicDesc, department, prof_id} = req.body;
@@ -186,10 +187,17 @@ app.post('/api/users/uploadTopic', (req, res) => {
 
 });
 
+//Retrieve the invites for a specific professor, only when they haven't already responded
 app.get('/api/users/invites', (req, res) => {
   const prof_id = req.query.prof_id;
 
-  db.query('SELECT topic, pending_thes.stud_id FROM pending_thes JOIN thesis ON pending_thes.thes_id = thesis.thes_id WHERE Prof2_id = ? OR Prof3_id = ?;', 
+  db.query(`SELECT topic, pending_thes.thes_id, pending_thes.stud_id
+FROM pending_thes
+JOIN thesis ON pending_thes.thes_id = thesis.thes_id
+WHERE 
+    (Prof2_id = ? AND Prof2Response = 'Waiting') 
+    OR 
+    (Prof3_id = ? AND Prof3Response = 'Waiting');`, 
     [prof_id, prof_id], 
     (err, results) => {
       if(err) {
@@ -202,6 +210,30 @@ app.get('/api/users/invites', (req, res) => {
     }
   );
 });
+
+//Send Acceptance/Rejection of invites to database, triggers in database update thesis table
+app.post('/api/users/acceptORreject', (req, res) => {
+  const{status, thes_id, prof_id} = req.body;
+  console.log(thes_id);
+
+  db.query(` UPDATE pending_thes 
+    SET 
+    Prof2Response = CASE WHEN Prof2_id = ? THEN ? ELSE Prof2Response END,
+    Prof3Response = CASE WHEN Prof3_id = ? THEN ? ELSE Prof3Response END
+  WHERE thes_id = ?`, 
+    [prof_id, status, prof_id, status, thes_id],
+    (err, results) => {
+      if(err) {
+        console.log('Request unsuccessful');
+        console.error('Database error: ', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(results);
+      console.log(results);
+    }
+    );
+
+})
 
 //Don't think this is actually necessary, all data loaded in at start, only need to send back updated details
 /*app.post('/api/users/search', (req, res) => {     //Queries database for profile details e.g. address and number after student clicks edit profile
