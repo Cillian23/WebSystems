@@ -36,6 +36,10 @@ label {  /*Keeps labels in a consistent style*/
     font-family: 'Courier New', Courier, monospace;
     color: #04AA6D;
 }
+
+label.assign {
+    color: #fff;
+}
 input[type=text], input[type=password]{  /*Input boxes have certain style, for text and passwords anyway */
     padding: 10px 10px;
     margin: 8px 0;
@@ -106,6 +110,14 @@ button.fade{
    border-radius: 10px;
    margin: 20px 10px;
 }
+
+.box.assign{
+    background-color: rgba(255, 255, 255, 1);
+    color: black;
+    border-radius: 10px ;
+    margin: 20px, 10px;
+}
+
 .popup{      /*Class to have a popup in the middle of the screen*/
     position: fixed;
     background-color: rgba(242, 236, 236, 0.85);

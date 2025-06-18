@@ -8,6 +8,10 @@ const popCanc = document.querySelector('button.popbtn');
 const subTopic = document.querySelector('button[name="SubTopic"]');
 const viewInvs = document.querySelector('button.vie.Inv');
 const pendingInvs = document.querySelector('.PendingInvites');
+const Assign = document.querySelector('button.ini.ass');
+const InitAssign = document.querySelector('.InitialAssign');
+
+
 console.log(localStorage.getItem('IDnumber'));
 
 const profID = localStorage.getItem('IDnumber');
@@ -21,7 +25,9 @@ popCanc.addEventListener('click', () => {     //Adding X out button for each men
         TopCreator.classList.remove('active');
         TopCreator.classList.add('inactive');
         pendingInvs.classList.add('inactive');
-        pendingInvs.classList.add('inactive');
+        pendingInvs.classList.remove('active');
+        InitAssign.classList.add('inactive');
+        InitAssign.classList.remove('active');
      /* studentTopic.classList.remove('active');  //Just a template
         profile.classList.remove('active');
         thesStatus[theStatus].classList.remove('active');
@@ -205,6 +211,89 @@ viewInvs.addEventListener('click', () => {
 
 });
 
+// Initial Assignment functions ----------------------------------------------------------------------------------------------------------------------------------
 
+//Create divs for topics to assign
+function createAssignDiv(item, count){
+  const div = document.createElement('div');
+            div.className = 'box assign';
+            div.setAttribute('Assign-id', `assignment${count}`);
+            console.log(item.topicTitle);
+            div.innerHTML = `
+                <label for="studID">Student ID</label>
+                <input type="text" name="studID" id="studID${count}" /> 
+                <label for="topTitle">Topic: </label>
+                <div class="TopicTitle">${item.topicTitle}</div>
+                <button class="Assign" id="Assign${count}" type="submit">Assign</button>
+            `;
+            return div;
+}
+
+function sendTopicSubmit(topicInfo){
+  fetch("http://localhost:3000/api/users/MakeAssign", {  
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(topicInfo)                  //pass in string version of data from the user object
+}) 
+    .then(res => {
+        if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`);   //error if fetch result doesn't work
+    }
+    else {
+    return res.json();   //if it works return json version
+    }
+  })
+}
+
+Assign.addEventListener('click', () => {
+        var prof_id = profID;
+        InitAssign.innerHTML = ' ';
+
+    fetch(`http://localhost:3000/api/users/ToAssign?prof_id=${prof_id}`)  //pass in professor id
+    .then(res => {
+        if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`);   //error if fetch result doesn't work
+    }
+    else {
+    return res.json();   //if it works return json version
+    }
+  })
+  .then( data => {    
+        console.log("We're here!!");
+        console.log(data);                       
+                      let count = 1;
+        if (data && data.length > 0 ) {
+            data.forEach(item => {
+                const itemElement = createAssignDiv(item, count);     //call createDiv function to create the elements
+                InitAssign.append(itemElement);                //Add elements to the overall InitAssign
+                console.log("created a div"); 
+                console.log(itemElement.innerHTML);    //Printing just for debugging
+                count++;
+            });
+           }
+           const AssignTop = document.querySelectorAll(`.box.assign`);
+           AssignTop.forEach(item => {
+            console.log(item.querySelector('.TopicTitle'));
+            const AssignButton = item.querySelector('button.Assign');
+            AssignButton.addEventListener('click', () => {
+              var info = {
+                topic: item.querySelector('.TopicTitle').innerText,
+                stud_id: item.querySelector('input[name="studID"').value,
+                Keysup_id: profID
+              }
+              sendTopicSubmit(info);
+            })
+           })
+})
+
+if(popVisi.classList.contains('inactive')){
+    popVisi.classList.toggle('inactive');
+    popVisi.classList.toggle('active');
+    InitAssign.classList.toggle('inactive');
+    InitAssign.classList.toggle('active');
+    }
+});
 //Endpoint
 });

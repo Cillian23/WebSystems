@@ -235,6 +235,43 @@ app.post('/api/users/acceptORreject', (req, res) => {
 
 })
 
+//Get list of topics made by professor to potentially assign to students
+app.get('/api/users/ToAssign', (req, res) => {
+  const prof_id = req.query.prof_id;
+
+  db.query('SELECT topicTitle FROM topics WHERE prof_id = ?',
+    [prof_id],
+    (err, results) => {
+      if(err) {
+        console.log('Request unsuccessful');
+        console.error('Database error: ', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(results);
+      console.log(results);
+    }
+  );
+})
+
+//Send thesis Assignment to db, create entry
+app.post('/api/users/MakeAssign', (req, res) => {
+  const {topic, stud_id, Keysup_id} = req.body;
+
+  db.query('INSERT INTO thesis VALUES (?, NULL, "assigning", NULL, ?, NULL, NULL, ?)', 
+    [stud_id, topic, Keysup_id],
+    (err, results) => {
+      if(err) {
+        console.log('Request unsuccessful');
+        console.error('Database error: ', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(results);
+      console.log(results);
+    }
+    );
+  
+})
+
 //Don't think this is actually necessary, all data loaded in at start, only need to send back updated details
 /*app.post('/api/users/search', (req, res) => {     //Queries database for profile details e.g. address and number after student clicks edit profile
   const { PostAddr, email, mobileNum, landlineNum } = req.body;
