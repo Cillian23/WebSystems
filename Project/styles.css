@@ -40,6 +40,9 @@ label {  /*Keeps labels in a consistent style*/
 label.assign {
     color: #fff;
 }
+label.invite {
+    color: #fff;
+}
 input[type=text], input[type=password]{  /*Input boxes have certain style, for text and passwords anyway */
     padding: 10px 10px;
     margin: 8px 0;
@@ -85,6 +88,36 @@ button.fade{
     background: linear-gradient(90deg,white 0%, rgb(107, 110, 108, 0.3) 100%);
 }
 
+button.filter{
+    background-color: #fff;
+    color: #04AA6D;
+    padding: 8px;
+    position: fixed;
+    top: 5%;
+    left: 5%;
+    
+}
+
+button.FilterBtn{
+  background-color: white;
+  color: black;
+  padding: 16px;
+  border: none;
+  cursor: pointer;
+  margin: 0%;
+  min-width: 100%;
+  max-width: 100%;
+  border-radius: 0%;
+}
+
+.filtersCont{
+  position: absolute;
+  max-width: 130%;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  z-index: 1;
+}
+
 .menu{  /*Have menu class in upper right section of screen*/
     position:fixed;
     top: 10%;
@@ -108,7 +141,7 @@ button.fade{
    background-color: rgba(17, 17, 17, 0.5);
    color: #fff;
    border-radius: 10px;
-   margin: 20px 10px;
+   margin: 20px 20px;
 }
 
 .box.assign{
