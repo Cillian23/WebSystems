@@ -78,17 +78,17 @@ DROP TABLE IF EXISTS `thesis`;
 
 CREATE TABLE thesis (
 stud_id INT(8) NOT NULL,
-thes_id INT(10) NOT NULL,
+thes_id INT(10) NOT NULL AUTO INCREMENT,
 Keysup_id INT(10) NOT NULL,
 2sup_id INT(10),
 3sup_id INT(10),
-topic VARCHAR(200) NOT NULL,
+topic VARCHAR(250) NOT NULL,
 status ENUM ("assigning", "active", "examining", "completed"),
 grade INT(3),
 PRIMARY KEY(stud_id, thes_id),
 UNIQUE KEY(thes_id),
 CONSTRAINT `auth` FOREIGN KEY (`stud_id`) REFERENCES student(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-CONSTRAINT `topic` FOREIGN KEY (`topic`) REFERENCES topics(`topic`) ON DELETE CASCADE ON UPDATE CASCADE
+CONSTRAINT `topic` FOREIGN KEY (`topic`) REFERENCES topics(`topicTitle`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 DROP TABLE IF EXISTS `supervised`;
@@ -105,13 +105,11 @@ DROP TABLE IF EXISTS `pending_thes`;
 CREATE TABLE pending_thes (
 stud_id INT(10) NOT NULL,
 thes_id INT(10) NOT NULL,
-keyProf_id INT(10) NOT NULL,
 Prof2_id INT(10) NOT NULL,
 Prof3_id INT(10) NOT NULL,
 Prof2Response ENUM("Waiting", "Accepted", "Rejected"),
 Prof3Response ENUM("Waiting", "Accepted", "Rejected"),
 PRIMARY KEY (stud_id, thes_id),
-CONSTRAINT `keyProf` FOREIGN KEY (`keyProf_id`) REFERENCES topics(`prof_id`) ON DELETE CASCADE ON UPDATE CASCADE,
 CONSTRAINT `whichThes` FOREIGN KEY (`thes_id`) REFERENCES thesis(`thes_id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -119,8 +117,10 @@ DROP TABLE IF EXISTS `comp_thes`;
 
 CREATE TABLE comp_thes (
 thesis_id INT(10) NOT NULL,
-sup_id INT(10),
-subject VARCHAR(50),
+Keysup_id INT(10),
+sup2_id INT(10),
+sup3_id INT(10),
+topic VARCHAR(250),
 grade INT(3),
 PRIMARY KEY (thesis_id)
 );
@@ -128,15 +128,11 @@ PRIMARY KEY (thesis_id)
 DROP TABLE IF EXISTS `topics`;
 
 CREATE TABLE topics (
-
-topic VARCHAR(60) NOT NULL,
-department VARCHAR(50),
-PRIMARY KEY (topic)
-=======
-topic VARCHAR(200) NOT NULL,
+topicTitle VARCHAR(250) NOT NULL,
+topicDesc VARCHAR(500),
 department VARCHAR(50),
 prof_id INT(10) NOT NULL, 
-PRIMARY KEY (topic, prof_id),
+PRIMARY KEY (topicTitle, prof_id),
 CONSTRAINT `realProf` FOREIGN KEY (`prof_id`) REFERENCES professor (`prof_id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -174,8 +170,7 @@ END IF;
 END$$
 DELIMITER ;
 
-
-DROP TRIGGER IF EXISTS `Thes_activated`;
+DROP TRIGGER IF EXISTS `Thes_activated`;   Comment!: Should uppdate this so when both accept or reject, removes from table, not yet, for trialling purposes
 
 DELIMITER $$
 
@@ -186,14 +181,15 @@ BEGIN
 DECLARE current INT DEFAULT 0;
 IF NEW.Prof2Response = 'Accepted' THEN
 SET current = current + 1;
+UPDATE thesis 
+SET status = 'active',
+sup2_id = OLD.Prof2_id
+WHERE thes_id = NEW.thes_id;
 END IF;
 IF NEW.Prof3Response = 'Accepted' THEN
 SET current = current + 1;
-END IF;
-IF current > 0 THEN
 UPDATE thesis 
 SET status = 'active',
-sup2_id = OLD.Prof2_id,
 sup3_id = OLD.Prof3_id
 WHERE thes_id = NEW.thes_id;
 END IF;
@@ -202,6 +198,7 @@ END$$
 DELIMITER ;
 
 
-
 																																																																																														
+
+
 
