@@ -117,7 +117,9 @@ DROP TABLE IF EXISTS `comp_thes`;
 
 CREATE TABLE comp_thes (
 thesis_id INT(10) NOT NULL,
-sup_id INT(10),
+Keysup_id INT(10),
+sup2_id INT(10),
+sup3_id INT(10),
 topic VARCHAR(250),
 grade INT(3),
 PRIMARY KEY (thesis_id)
