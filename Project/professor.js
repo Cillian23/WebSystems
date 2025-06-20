@@ -1,16 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  const hideAllPanels = () => {
-    document.querySelectorAll('.modal-overlay, .content-panel').forEach(el => {
-      el.style.display = 'none';
-    });
-  };
+const hideAllPanels = () => {
+  document.querySelectorAll('.modal-overlay, .content-panel').forEach(el => {
+    el.style.display = 'none';
+  });
+};
 
-  const showPanel = id => {
-    hideAllPanels();
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'flex';
-  };
+const showPanel = id => {
+  hideAllPanels(); // Oculta todo antes de mostrar otro
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'flex'; // O block, dependiendo del contenedor
+};
 
   // Panel buttons
   document.querySelector('.cre.th').addEventListener('click', () => showPanel('createTopicForm'));
@@ -27,7 +27,13 @@ document.addEventListener('DOMContentLoaded', () => {
     list.innerHTML = '';
 
     try {
-      const res = await fetch('http://localhost:3000/api/instructor/theses');
+      const profId = localStorage.getItem('prof_id');
+      if (!profId) {
+        alert('No instructor ID found. Please log in again.');
+        return;
+      }
+
+      const res = await fetch(`http://localhost:3000/api/instructor/theses?prof_id=${profId}`);
       const data = await res.json();
 
       if (!Array.isArray(data)) throw new Error('Unexpected data');
