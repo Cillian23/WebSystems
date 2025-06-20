@@ -187,6 +187,25 @@ app.post('/api/users/uploadTopic', (req, res) => {
 
 });
 
+//Upload thesis draft and otherrelevant info
+app.post('/api/users/upDraft', (req, res) => {
+  const {draft, extraLink1, extraLink2, examDate, examLoc, stud_id} = req.body;
+
+  db.query('UPDATE thesis SET draft = ?, extraLink1 = ?, extraLink2 = ?, examDate = ?, examLoc = ? WHERE stud_id = ?', 
+    [draft, extraLink1, extraLink2, examDate, examLoc, stud_id],
+    (err, results) => {
+      if (err) {
+        console.log('propa fucked');
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      console.log(results);
+      res.json(results);
+    }
+
+  );
+})
+
 //Retrieve the invites for a specific professor, only when they haven't already responded
 app.get('/api/users/invites', (req, res) => {
   const prof_id = req.query.prof_id;
@@ -272,6 +291,7 @@ app.post('/api/users/MakeAssign', (req, res) => {
   
 })
 
+//Get professor's list of theses
 app.get('/api/users/listView', (req, res) => {
   const prof_id = req.query.prof_id;
 
@@ -288,6 +308,59 @@ app.get('/api/users/listView', (req, res) => {
     }
   );
 })
+
+//Get all theses for secretary
+app.get('/api/users/listViewSec', (req, res) => {
+
+  db.query('SELECT topic, status, Keysup_id, sup2_id, sup3_id, stud_id FROM thesis',
+    (err, results) => {
+      if(err) {
+        console.log('Request unsuccessful');
+        console.error('Database error: ', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(results);
+      console.log(results);
+    }
+  );
+})
+
+app.get('/api/users/DataImport', (req, res) => {
+  const id = req.query.Query_id;
+
+  //Don't get the user's password
+  db.query('SELECT id, first_name, last_name, major, department, email, username, mobileNum, landlineNum, PostAddr, user_type FROM user WHERE id = ? AND user_type NOT LIKE "%sec%";',
+    [id],
+    (err, results) => {
+      if(err) {
+        console.log('Request unsuccessful');
+        console.error('Database error: ', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', 'attachment; filename="users.json"');
+      res.json(results);
+      console.log(results);
+    }
+  );
+})
+
+app.get('/api/users/thesStatus', (req, res) => {
+  const stud_id = req.query.stud_id;
+  db.query('SELECT status FROM thesis WHERE stud_id = ?', 
+    [stud_id], 
+    (err, results) => {
+      if(err) {
+        console.log('Request unsuccessful');
+        console.error('Database error: ', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(results);
+      console.log(results);
+    }
+  )
+})
+
 //Don't think this is actually necessary, all data loaded in at start, only need to send back updated details
 /*app.post('/api/users/search', (req, res) => {     //Queries database for profile details e.g. address and number after student clicks edit profile
   const { PostAddr, email, mobileNum, landlineNum } = req.body;

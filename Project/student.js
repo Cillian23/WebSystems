@@ -93,7 +93,7 @@ viewTopic.addEventListener('click', () => {      //Button for viewing thesis top
       document.getElementById('keySup').innerText = `${data[0].first_name} ${data[0].last_name}`;
     }
     if (data[0].sup2_id == null || data[0].sup3_id == null){
-      document.getElementById('otherSups').innerText = 'not assigned yet'
+      document.getElementById('otherSups').innerText = 'not all assigned yet'
     }   
     else {
       document.getElementById('otherSups').innerText = `${data[0].sup2_id} and ${data[0].sup3_id}`;
@@ -181,6 +181,36 @@ console.log(ProfDetails);
 
 
 viewThesis.addEventListener('click', () => {  //Button for viewing thesis status, array as depends on current thesis status, arbitrary variable at the moment
+  fetch(`http://localhost:3000/api/users/thesStatus?stud_id=${IDnumber.stud_id}`)  //pass in student id
+    .then(res => {
+        if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`);   //error if fetch result doesn't work
+    }
+    else {
+    return res.json();   //if it works return json version
+    }
+  })
+  .then(data => {    //Set the status to what the status of the thesis is, changes which popups occur
+    console.log(data);
+    console.log(thesStatus)
+    if (data[0].status == "assigning") {
+      theStatus=0;
+      console.log(0);
+    }
+    else if (data[0].status == "active") {
+      theStatus=1;
+      console.log(1);
+    } 
+     if (data[0].status == "examining") {
+      theStatus=2;
+      console.log(2);
+    }
+    else if (data[0].status == "completed") {
+      theStatus=3;
+      console.log(3);
+    }
+  })  
+  .then(() => {
     if(popVisi.classList.contains('inactive')){
 
         thesStatus[theStatus].classList.toggle('active');
@@ -188,9 +218,11 @@ viewThesis.addEventListener('click', () => {  //Button for viewing thesis status
         popVisi.classList.toggle('inactive');
         popVisi.classList.toggle('active');
     }  
-
-});
-SelectInstructors.addEventListener('click', () => {    // Sending entered instructors to DB so they can accept/reject
+})
+//Add event listeners based on the status of the thesis
+.then(() => {
+  if (theStatus == 0) {
+  SelectInstructors.addEventListener('click', () => {    // Sending entered instructors to DB so they can accept/reject
     console.log(document.getElementById('Prof2').value); //Checking they're taken in
     console.log(document.getElementById('Prof3').value);
     var prefInstructors = {                              // passing values into object for fetch request 
@@ -220,6 +252,49 @@ SelectInstructors.addEventListener('click', () => {    // Sending entered instru
   })
   .catch(err => console.error('Error:', err));
 });
+}
+else if (theStatus == 1){
+  console.log('active');
+}
+else if (theStatus == 2){                                  //Upload draft etc
+  console.log("Wheee");
+const draftUp = document.querySelector('button[name="thesDraft"]');
+draftUp.addEventListener('click', () => {
+  var draftDeets = {
+    draft: document.getElementById('inputDraft').value,
+    extraLink1: document.getElementById('Extra1').value,
+    extraLink2: document.getElementById('Extra2').value,
+    examDate: document.getElementById('when').value,
+    examLoc: document.getElementById('where').value, 
+    stud_id: IDnumber.stud_id
+  }
+  console.log(draftDeets);
+
+  fetch('http://localhost:3000/api/users/upDraft', {  //Send saved data to backend, where it updates database
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(draftDeets)                  //pass in string version of data 
+}) 
+.then(res => {
+    if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`);   //error if fetch result doesn't work
+    }
+    else {
+    return res.json();   //if it works return json version
+    }
+  })
+  .then(data => {
+    console.log(data);     //print returned data in console, just saying sql message that it's changed
+  })
+  .catch(err => console.error('Error:', err));
+})
+}
+})
+
+});
+
 
 
 

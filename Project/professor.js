@@ -220,7 +220,7 @@ viewInvs.addEventListener('click', () => {
 //Create divs for topics to assign
 function createAssignDiv(item, count){
   const div = document.createElement('div');
-            div.className = 'box invite';
+            div.className = 'box invite assignment';
             div.setAttribute('Assign-id', `assignment${count}`);
             console.log(item.topicTitle);
             div.innerHTML = `
@@ -235,6 +235,7 @@ function createAssignDiv(item, count){
 }
 
 function sendTopicSubmit(topicInfo){
+  console.log("Made to function");
   fetch("http://localhost:3000/api/users/MakeAssign", {  
   method: 'POST',
   headers: {
@@ -247,6 +248,7 @@ function sendTopicSubmit(topicInfo){
       throw new Error(`HTTP error! Status: ${res.status}`);   //error if fetch result doesn't work
     }
     else {
+      console.log("sent assign");
     return res.json();   //if it works return json version
     }
   })
@@ -278,7 +280,7 @@ Assign.addEventListener('click', () => {
                 count++;
             });
            }
-           const AssignTop = document.querySelectorAll(`.box.assign`);
+           const AssignTop = document.querySelectorAll(`.box.invite.assignment`);
            AssignTop.forEach(item => {
             console.log(item.querySelector('.TopicTitle'));
             const AssignButton = item.querySelector('button.Assign');
