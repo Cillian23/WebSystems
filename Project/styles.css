@@ -119,16 +119,59 @@ button:hover{  /*When button is hovered over*/
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgba(255, 255, 255, 0.95);
-  padding: 30px;
+  background-color: rgba(255, 255, 255, 0.92);
+  color: #04AA6D;
   border-radius: 15px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.2);
-  width: 40%;              /* antes estaba en 60% */
-  max-width: 600px;        /* opcional para pantallas grandes */
-  max-height: 80vh;
-  overflow-y: auto;
-  z-index: 1000;
+  padding: 30px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  width: 500px;
+  max-width: 90%;
+  z-index: 999;
   display: none;
+  font-family: 'Courier New', Courier, monospace;
+}
+.content-panel h3 {
+  margin-top: 0;
+}
+
+.content-panel ul {
+  padding-left: 0;
+  list-style: none;
+}
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* dark transparent background */
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-content {
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 30px 40px;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  min-width: 500px;
+  max-width: 90%;
+  position: relative;
 }
 
 

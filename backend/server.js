@@ -75,8 +75,11 @@ app.post('/api/users/thesis', (req, res) => {
 
 // Instructor: get list of theses they supervise
 app.get('/api/instructor/theses', (req, res) => {
-  const instructor_id = 1; // Replace with dynamic value in real app
-
+  const instructor_id = parseInt(req.query.prof_id);
+   // Replace with dynamic value in real app
+  if (!instructor_id) {
+    return res.status(400).json({ message: 'Missing professor ID' });
+  }
   const sql = `
     SELECT t.thes_id, t.stud_id, t.status, t.topic
     FROM thesis t
@@ -87,10 +90,6 @@ app.get('/api/instructor/theses', (req, res) => {
     if (err) {
       console.error('❌ DB Error in /theses:', err);
       return res.status(500).json({ message: 'Error loading theses' });
-    }
-
-    if (!Array.isArray(results)) {
-      return res.status(500).json({ message: 'Unexpected result from database' });
     }
 
     res.json(results);
@@ -114,28 +113,25 @@ app.post('/api/instructor/theses/:id/mark-exam', (req, res) => {
 });
 
 // Instructor: create a new thesis topic (PDF upload can be added later)
-app.post('/api/instructor/topics', (req, res) => {
-  const { title, description } = req.body;
-  const prof_id = 1; // Replace with actual professor ID
-
-  if (!title || !description) {
-    return res.status(400).json({ message: 'Missing title or description' });
-  }
+app.get('/api/instructor/theses', (req, res) => {
+  const instructor_id = parseInt(req.query.prof_id);
+  if (!instructor_id) return res.status(400).json({ message: 'Missing professor ID' });
 
   const sql = `
-    INSERT INTO topics (topic, department, prof_id)
-    VALUES (?, 'Engineering', ?)
+    SELECT t.thes_id, t.stud_id, t.status, t.topic
+    FROM thesis t
+    WHERE t.keysup_id = ? OR t.sup2_id = ? OR t.sup3_id = ?
   `;
 
-  db.query(sql, [title, prof_id], (err, result) => {
+  db.query(sql, [instructor_id, instructor_id, instructor_id], (err, results) => {
     if (err) {
-      console.error('❌ Error inserting topic:', err);
-      return res.status(500).json({ message: 'Failed to save topic' });
+      console.error(err);
+      return res.status(500).json({ message: 'Error loading theses' });
     }
-
-    res.json({ message: 'Topic saved successfully', topicId: result.insertId });
+    res.json(results);
   });
 });
+
 
 // Start the server
 app.listen(port, () => {
