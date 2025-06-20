@@ -1,191 +1,143 @@
+// Load environment variables
 require('dotenv').config({ path: __dirname + '/.env' });
-/*This is so you can connect database from your computer, set up a file called .env (In same folder as this file) and put in following
-DB_HOST=localhost
-DB_USER=root
-DB_PASS=yourpassword
-DB_NAME=yourdbname
-All examples, use relevant ones
-gitignore contains the .env file and also the node_modules from installing node.js and setting up the project, can just do it yourself
-*/
 
-//Set up --------------------------------------------------------------------------------------------------------------------------------------------------------
+// Import required packages
 const express = require('express');
 const cors = require('cors');
+const mysql = require('mysql2');
+
+// Initialize Express app
 const app = express();
 const port = 3000;
 
-console.log('DB_USER:', process.env.DB_USER);
-console.log('DB_NAME:', process.env.DB_NAME);
-
-  var username1;    //initialise username for update on each user
-
-
-
-
-// Middleware --------------------------------------------------------------------------------------------------------------------------------------------------
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// MySQL, connect to database with credentials from .env file -----------------------------------------------------------------------------------------------------------
+// Log environment variables
+console.log('DB_USER:', process.env.DB_USER);
+console.log('DB_NAME:', process.env.DB_NAME);
 
-const mysql = require('mysql2');
+// Connect to MySQL
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-  port: process.env.PORT
+  database: process.env.DB_NAME
 });
-
 
 db.connect(err => {
-  if (err) throw err;
-  console.log('Connected to MySQL');
+  if (err) {
+    console.error('❌ Error connecting to MySQL:', err);
+    process.exit(1);
+  }
+  console.log('✅ Connected to MySQL');
 });
 
-//Routes to the database ------------------------------------------------------------------------------------------------------------------------------------------
-// Example Route
-/*app.get('/api/users', (req, res) => {
-  db.query(`SELECT * FROM student`, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-    console.log(req);
-  });
-});*/
-app.post('/api/users/search', (req, res) => {     //Queries database for student details after username and password are used to log in
+// ========== ROUTES ==========
+
+// Simple login route (based on username/password)
+app.post('/api/users/search', (req, res) => {
   const { username, password } = req.body;
-  //username1=username;
-  console.log(req.body);
-  // Both parameters are required
+
   if (!username || !password) {
-    console.log("shite");
-    return res.status(400).json({ error: 'Username/Password are incorrect' });
+    return res.status(400).json({ error: 'Missing credentials' });
   }
-  
-  db.query('SELECT * FROM user WHERE username = ? AND password = ?', 
-    [username, password], 
+
+  db.query(
+    'SELECT * FROM user WHERE username = ? AND password = ?',
+    [username, password],
     (err, results) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
+      if (err) return res.status(500).json({ error: 'Database error' });
       res.json(results);
     }
   );
 });
 
-app.post('/api/users/thesis', (req, res) => {    //Queries database for thesis details once student id is passed in, for access from student page, view thesis button
-  const {stud_id} = req.body;
-  console.log(stud_id);
+// Get thesis details for a student
+app.post('/api/users/thesis', (req, res) => {
+  const { stud_id } = req.body;
+
   if (!stud_id) {
-    console.log('fucked it');
-    return res.status(400).json({ error: 'No student ID' });
+    return res.status(400).json({ error: 'Missing student ID' });
   }
 
-  db.query('SELECT topic, status, key_sup, sup2_id, sup3_id FROM thesis WHERE stud_id = ?', 
-    [stud_id], 
+  db.query(
+    'SELECT topic, status, keysup_id, sup2_id, sup3_id FROM thesis WHERE stud_id = ?',
+    [stud_id],
     (err, results) => {
-      if (err) {
-        console.log('propa fucked');
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
+      if (err) return res.status(500).json({ error: 'Database error' });
       res.json(results);
     }
   );
 });
 
-// IT WORKS!!!! Update saved details in database
-app.post('/api/users/UpdateStudDeets', (req, res) => {    //Updates saved details in edit profile section, sends new details to database
-  const {PostAddr, email, mobileNum, landlineNum} = req.body;
-  console.log(PostAddr);
-  var username = username1;
+// Instructor: get list of theses they supervise
+app.get('/api/instructor/theses', (req, res) => {
+  const instructor_id = 1; // Replace with dynamic value in real app
 
-  db.query('UPDATE user SET PostAddr = ?, email = ?, mobileNum = ?, landlineNum = ? WHERE username = ?', 
-    [PostAddr, email, mobileNum, landlineNum, username], 
-    (err, results) => {
-      if (err) {
-        console.log('propa fucked');
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
-      res.json(results);
+  const sql = `
+    SELECT t.thes_id, t.stud_id, t.status, t.topic
+    FROM thesis t
+    WHERE t.keysup_id = ? OR t.sup2_id = ? OR t.sup3_id = ?
+  `;
+
+  db.query(sql, [instructor_id, instructor_id, instructor_id], (err, results) => {
+    if (err) {
+      console.error('❌ DB Error in /theses:', err);
+      return res.status(500).json({ message: 'Error loading theses' });
     }
-  );
-});
 
-app.post('/api/users/SubmitPrefInstructors', (req, res) => { // Takes emails of preferred professors from frontend, finds relevant IDs, adds all to pending_thes table in DB--------
-  console.log('called');                                      //DB Queries are nested so they work in order, promise probably better, CBA
-  const {KeyProf, prof2, prof3, stud_id} = req.body;
-  console.log(stud_id);
-  var keyProf_id;
-  var Prof2_id;
-  var Prof3_id;
-  db.query('SELECT prof_id FROM professor WHERE email = ?',
-    [KeyProf],
-    (err, results) => {
-      if (err) {
-        console.log('KeyProf email not found');
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
-      console.log(results);     //Just to see the results
-      keyProf_id = results[0].prof_id;    // Key professors id taken for use in creating values later
-      console.log(typeof keyProf_id);
-    
-  
-      db.query('SELECT prof_id FROM professor WHERE email = ? OR email = ?',
-        [prof2, prof3],
-        (err, results) => {
-          if (err) {
-            console.log('Profs email not found');
-            console.error('Database error:', err);
-            return res.status(500).json({ error: 'Database error' });
-          }
-          console.log(results); //Just to see the results
-          Prof2_id = Object.values(results[0])[0];  // Other professors ids taken for use in creating values later
-          Prof3_id = Object.values(results[1])[0];
-          console.log(typeof Prof2_id);  
-          console.log(Prof3_id);  
-        
-      
-    
-    
-         db.query('INSERT INTO pending_thes VALUES (?, ?, ?, ?, "Waiting", "Waiting", "Waiting")', //Take student ID, professors IDs, add to pending thesis table
-           [stud_id, keyProf_id, Prof2_id, Prof3_id],
-           (err, results) => {
-             if(err) {
-               console.log('Insertion unsuccessful');
-               console.error('Database error:', err);
-               return res.status(500).json({ error: 'Database error' });
-             }
-             res.json(results);
-           }
-      );
-    });
+    if (!Array.isArray(results)) {
+      return res.status(500).json({ message: 'Unexpected result from database' });
+    }
+
+    res.json(results);
   });
 });
 
+// Instructor: mark thesis as under examination
+app.post('/api/instructor/theses/:id/mark-exam', (req, res) => {
+  const thesisId = req.params.id;
 
-//Don't think this is actually necessary, all data loaded in at start, only need to send back updated details
-/*app.post('/api/users/search', (req, res) => {     //Queries database for profile details e.g. address and number after student clicks edit profile
-  const { PostAddr, email, mobileNum, landlineNum } = req.body;
-  
-  db.query('SELECT  FROM student WHERE username = ? AND password = ?', 
-    [username, password], 
-    (err, results) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
-      res.json(results);
+  const sql = `UPDATE thesis SET status = 'examining' WHERE thes_id = ?`;
+
+  db.query(sql, [thesisId], (err, result) => {
+    if (err) {
+      console.error('❌ Error updating thesis status:', err);
+      return res.status(500).json({ message: 'Failed to update status' });
     }
-  );
-}); */
 
-app.listen(port, () => {                                 //Confirms connection to database
-  console.log(`Server running on http://localhost:${port}`);
+    res.json({ message: 'Thesis marked as under examination' });
+  });
 });
 
+// Instructor: create a new thesis topic (PDF upload can be added later)
+app.post('/api/instructor/topics', (req, res) => {
+  const { title, description } = req.body;
+  const prof_id = 1; // Replace with actual professor ID
 
+  if (!title || !description) {
+    return res.status(400).json({ message: 'Missing title or description' });
+  }
+
+  const sql = `
+    INSERT INTO topics (topic, department, prof_id)
+    VALUES (?, 'Engineering', ?)
+  `;
+
+  db.query(sql, [title, prof_id], (err, result) => {
+    if (err) {
+      console.error('❌ Error inserting topic:', err);
+      return res.status(500).json({ message: 'Failed to save topic' });
+    }
+
+    res.json({ message: 'Topic saved successfully', topicId: result.insertId });
+  });
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`🚀 Server running on http://localhost:${port}`);
+});

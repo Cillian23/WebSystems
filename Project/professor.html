@@ -1,37 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>   <!--Setup and linking relevant pages-->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instructor DashBoard</title>
-    <h1>Welcome Instructor</h1>
-    <link rel="stylesheet" href="styles.css">
-    <!--<link rel="Login" href="index.html"/>-->
+<head>   
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instructor Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="menu">  <!--Menu for student page options-->
-    <div class="box">  <!--Box class provides background box for css purposes-->
-    <button class="cre th">Create Thesis Topic</button>  <!--Create Thesis Topic-->
-    <br/>
-    <button class="vie th">View Thesis Topics</button>   <!--View Thesis Topics-->
-    <br/>
-    <button class="ini ass">Initial Assignment of a Topic</button>   <!--Initial Assignment of a Topic to a Studen-->
-    <br/>
-    <button class="vie Lis">View List of Theses</button>   <!--View List of Theses-->
-    <br/>
-    <button class="vie Inv">View Invitations to a Three-Member Committees</button>   <!--View Invitations to Participate in Three-Member Committees-->
-    <br/>
-    <button class="vie sta">View Statistics</button>   <!--View Statistics-->
-    <br/>
-    <button class="man the">Management of These</button>   <!--Management of These-->
-    <br/>
-</div>
-</div>
+  <h1>Welcome Instructor</h1>
 
-    <form>  <!--Log out button to return to Login Page-->
-        <button class="out" type="submit" formaction="index.html">Log Out</button>
-    </form>
+  <!-- Menu -->
+  <div class="menu">
+    <div class="box">
+      <button class="cre th">Create Thesis Topic</button><br/>
+      <button class="vie th">View Thesis Topics</button><br/>
+      <button class="ini ass">Initial Assignment of a Topic</button><br/>
+      <button class="vie Lis">View List of Theses</button><br/>
+      <button class="vie Inv">View Invitations to a Three-Member Committees</button><br/>
+      <button class="vie sta">View Statistics</button><br/>
+      <button class="man the">Management of These</button><br/>
+    </div>
+  </div>
 
-    <script src="app.js" defer></script> <!--Lets all elements load before javascript code kicks in-->
+  <!-- Logout -->
+  <form>
+    <button class="out" type="submit" formaction="index.html">Log Out</button>
+  </form>
+
+  <!-- Create Topic Modal -->
+  <div class="modal-overlay" id="createTopicForm" style="display: none;">
+    <div class="modal-content">
+      <button class="close-btn" id="closeModal">X</button>
+      <h3>Create Thesis Topic</h3>
+      <form id="topicForm">
+        <label for="title">Title:</label>
+        <input type="text" id="title" required><br>
+        <label for="description">Description:</label>
+        <textarea id="description" required></textarea><br>
+        <label for="pdfFile">Upload PDF:</label>
+        <input type="file" id="pdfFile" accept=".pdf"><br>
+        <div class="modal-buttons">
+          <button type="submit">Save</button>
+          <button type="button" id="cancelModal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Assignment Modal -->
+  <div class="modal-overlay" id="assignTopicForm" style="display: none;">
+    <div class="modal-content">
+      <button class="close-btn" id="closeAssignModal">X</button>
+      <h3>Assign Topic to Student</h3>
+      <form id="assignmentForm">
+        <label for="topicId">Select Topic:</label>
+        <select id="topicId" required>
+          <option value="">-- Select one --</option>
+        </select>
+        <label for="studentId">Student ID:</label>
+        <input type="text" id="studentId" required>
+        <div class="modal-buttons">
+          <button type="submit">Assign</button>
+          <button type="button" id="cancelAssignModal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Management Panel -->
+  <div id="thesisManagement" class="content-panel" style="display: none;">
+    <button class="close-btn" id="closeManageModal">X</button>
+    <h3>Manage Theses</h3>
+    <ul id="thesisList"></ul>
+  </div>
+
+  <!-- View Topics Panel -->
+  <div id="viewTopicsPanel" class="content-panel" style="display: none;">
+    <button class="close-btn" id="closeViewTopics">X</button>
+    <h3>Thesis Topics</h3>
+    <ul id="topicsList">
+      <li>Example Topic 1</li>
+      <li>Example Topic 2</li>
+    </ul>
+  </div>
+
+  <!-- List of Theses Panel -->
+  <div id="listThesesPanel" class="content-panel" style="display: none;">
+    <button class="close-btn" id="closeListPanel">X</button>
+    <h3>List of Theses</h3>
+    <ul id="listThesesContent">
+      <li>Thesis A</li>
+      <li>Thesis B</li>
+    </ul>
+  </div>
+
+  <!-- Invitations Panel -->
+  <div id="invitationPanel" class="content-panel" style="display: none;">
+    <button class="close-btn" id="closeInvitations">X</button>
+    <h3>Committee Invitations</h3>
+    <ul id="invitationsList">
+      <li>Invite 1</li>
+      <li>Invite 2</li>
+    </ul>
+  </div>
+
+  <!-- Statistics Panel -->
+  <div id="statisticsPanel" class="content-panel" style="display: none;">
+    <button class="close-btn" id="closeStatistics">X</button>
+    <h3>Statistics</h3>
+    <p>Coming soon...</p>
+  </div>
+
+  <!-- JS -->
+  <script src="professor.js" defer></script>
 </body>
 </html>

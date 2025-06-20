@@ -1,205 +1,193 @@
-WebSystems DB
-Still need to create triggers so sub tables of user are remaining consistent
+-- Delete tables if they exist (in correct order by dependencies)DROP TABLE IF EXISTS comp_thes;
+DROP TABLE IF EXISTS pending_thes;
+DROP TABLE IF EXISTS supervised;
+DROP TABLE IF EXISTS thesis;
+DROP TABLE IF EXISTS topics;
+DROP TABLE IF EXISTS professor;
+DROP TABLE IF EXISTS secretary;
+DROP TABLE IF EXISTS staff;
+DROP TABLE IF EXISTS student;
+DROP TABLE IF EXISTS user;
 
-
-DROP TABLE IF EXISTS `user`;
-
+-- Main user table
 CREATE TABLE user (
-id INT(10) NOT NULL, 
-first_name VARCHAR(50),
-last_name VARCHAR(50),
-major VARCHAR(50),
-department VARCHAR(50),
-email VARCHAR(40),
-password VARCHAR(40),
-username VARCHAR(40),
-mobileNum INT(20),
-landlineNum INT(20),
-PostAddr VARCHAR(250),
-userType ENUM("student", "professor", "secretary") NOT NULL,
-PRIMARY KEY (id),
-UNIQUE KEY (username)
+  id INT(10) NOT NULL, 
+  first_name VARCHAR(50),
+  last_name VARCHAR(50),
+  major VARCHAR(50),
+  department VARCHAR(50),
+  email VARCHAR(40),
+  password VARCHAR(40),
+  username VARCHAR(40),
+  mobileNum INT(20),
+  landlineNum INT(20),
+  PostAddr VARCHAR(250),
+  userType ENUM("student", "professor", "secretary") NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY (username)
 );
 
-DROP TABLE IF EXISTS `student`;
-
+-- Student subtable
 CREATE TABLE student (
-id INT(8) NOT NULL,
-username VARCHAR(40) NOT NULL,
-password VARCHAR(40) NOT NULL,
-email VARCHAR(40),
-first_name VARCHAR(50),
-last_name VARCHAR(50),
-major VARCHAR(50),
-mobileNum INT(10),
-landlineNum INT(10),
-PostAddr VARCHAR(250),
-PRIMARY KEY (id),
-UNIQUE KEY (username)
+  id INT(8) NOT NULL,
+  username VARCHAR(40) NOT NULL,
+  password VARCHAR(40) NOT NULL,
+  email VARCHAR(40),
+  first_name VARCHAR(50),
+  last_name VARCHAR(50),
+  major VARCHAR(50),
+  mobileNum INT(10),
+  landlineNum INT(10),
+  PostAddr VARCHAR(250),
+  PRIMARY KEY (id),
+  UNIQUE KEY (username)
 );
 
-DROP TABLE IF EXISTS `staff`;
-
+-- Academic staff table
 CREATE TABLE staff (
-id INT(10) NOT NULL,
-username VARCHAR(40) NOT NULL,
-password VARCHAR(40) NOT NULL,
-email VARCHAR(40),
-first_name VARCHAR(50),
-last_name VARCHAR(50),
-department VARCHAR(50),
-PRIMARY KEY (id),
-UNIQUE KEY (username)
+  id INT(10) NOT NULL,
+  username VARCHAR(40) NOT NULL,
+  password VARCHAR(40) NOT NULL,
+  email VARCHAR(40),
+  first_name VARCHAR(50),
+  last_name VARCHAR(50),
+  department VARCHAR(50),
+  PRIMARY KEY (id),
+  UNIQUE KEY (username)
 );
 
-DROP TABLE IF EXISTS `secretary`;
-
+-- Secretary
 CREATE TABLE secretary (
-    sec_id INT(10) NOT NULL,
-    first_name VARCHAR(50),
-    email VARCHAR(40),
-    department VARCHAR(50),
-    PRIMARY KEY (sec_id),
-    CONSTRAINT `secID` FOREIGN KEY (`sec_id`) REFERENCES `staff`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  sec_id INT(10) NOT NULL,
+  first_name VARCHAR(50),
+  email VARCHAR(40),
+  department VARCHAR(50),
+  PRIMARY KEY (sec_id),
+  FOREIGN KEY (sec_id) REFERENCES staff(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-DROP TABLE IF EXISTS `professor`;
-
+-- Professor
 CREATE TABLE professor (
-prof_id INT(10) NOT NULL,
-first_name VARCHAR(50),
-email VARCHAR(40),
-department VARCHAR(50),
-PRIMARY KEY (prof_id),
-CONSTRAINT `profID` FOREIGN KEY (`prof_id`) REFERENCES `staff`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  prof_id INT(10) NOT NULL,
+  first_name VARCHAR(50),
+  email VARCHAR(40),
+  department VARCHAR(50),
+  PRIMARY KEY (prof_id),
+  FOREIGN KEY (prof_id) REFERENCES staff(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-DROP TABLE IF EXISTS `thesis`;
-
-CREATE TABLE thesis (
-stud_id INT(8) NOT NULL,
-thes_id INT(10) NOT NULL,
-Keysup_id INT(10) NOT NULL,
-2sup_id INT(10),
-3sup_id INT(10),
-topic VARCHAR(200) NOT NULL,
-status ENUM ("assigning", "active", "examining", "completed"),
-grade INT(3),
-PRIMARY KEY(stud_id, thes_id),
-UNIQUE KEY(thes_id),
-CONSTRAINT `auth` FOREIGN KEY (`stud_id`) REFERENCES student(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-CONSTRAINT `topic` FOREIGN KEY (`topic`) REFERENCES topics(`topic`) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-DROP TABLE IF EXISTS `supervised`;
-
-CREATE TABLE supervised (
-sup_id INT(10) NOT NULL,
-thesis_id INT(10) NOT NULL,
-PRIMARY KEY (sup_id, thesis_id),
-CONSTRAINT `thesis` FOREIGN KEY (`thesis_id`) REFERENCES thesis(`thes_id`) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-DROP TABLE IF EXISTS `pending_thes`;
-
-CREATE TABLE pending_thes (
-stud_id INT(10) NOT NULL,
-thes_id INT(10) NOT NULL,
-keyProf_id INT(10) NOT NULL,
-Prof2_id INT(10) NOT NULL,
-Prof3_id INT(10) NOT NULL,
-Prof2Response ENUM("Waiting", "Accepted", "Rejected"),
-Prof3Response ENUM("Waiting", "Accepted", "Rejected"),
-PRIMARY KEY (stud_id, thes_id),
-CONSTRAINT `keyProf` FOREIGN KEY (`keyProf_id`) REFERENCES topics(`prof_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-CONSTRAINT `whichThes` FOREIGN KEY (`thes_id`) REFERENCES thesis(`thes_id`) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-DROP TABLE IF EXISTS `comp_thes`;
-
-CREATE TABLE comp_thes (
-thesis_id INT(10) NOT NULL,
-sup_id INT(10),
-subject VARCHAR(50),
-grade INT(3),
-PRIMARY KEY (thesis_id)
-);
-
-DROP TABLE IF EXISTS `topics`;
-
+-- Proposed topics
 CREATE TABLE topics (
-
-topic VARCHAR(60) NOT NULL,
-department VARCHAR(50),
-PRIMARY KEY (topic)
-=======
-topic VARCHAR(200) NOT NULL,
-department VARCHAR(50),
-prof_id INT(10) NOT NULL, 
-PRIMARY KEY (topic, prof_id),
-CONSTRAINT `realProf` FOREIGN KEY (`prof_id`) REFERENCES professor (`prof_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  topic VARCHAR(200) NOT NULL,
+  department VARCHAR(50),
+  prof_id INT(10) NOT NULL,
+  PRIMARY KEY (topic, prof_id),
+  FOREIGN KEY (prof_id) REFERENCES professor(prof_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-DROP TRIGGER IF EXISTS `thesis_complete`;
+-- Thesis
+CREATE TABLE thesis (
+  stud_id INT(8) NOT NULL,
+  thes_id INT(10) NOT NULL,
+  keysup_id INT(10) NOT NULL,
+  sup2_id INT(10),
+  sup3_id INT(10),
+  topic VARCHAR(200) NOT NULL,
+  status ENUM("assigning", "active", "examining", "completed"),
+  grade INT(3),
+  PRIMARY KEY(stud_id, thes_id),
+  UNIQUE KEY (thes_id),
+  FOREIGN KEY (stud_id) REFERENCES student(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (topic, keysup_id) REFERENCES topics(topic, prof_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
 
+-- Supervisory relationship
+CREATE TABLE supervised (
+  sup_id INT(10) NOT NULL,
+  thesis_id INT(10) NOT NULL,
+  PRIMARY KEY (sup_id, thesis_id),
+  FOREIGN KEY (thesis_id) REFERENCES thesis(thes_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Pending invitations to committee members
+CREATE TABLE pending_thes (
+  stud_id INT(10) NOT NULL,
+  thes_id INT(10) NOT NULL,
+  keyProf_id INT(10) NOT NULL,
+  Prof2_id INT(10) NOT NULL,
+  Prof3_id INT(10) NOT NULL,
+  Prof2Response ENUM("Waiting", "Accepted", "Rejected"),
+  Prof3Response ENUM("Waiting", "Accepted", "Rejected"),
+  PRIMARY KEY (stud_id, thes_id),
+  FOREIGN KEY (thes_id) REFERENCES thesis(thes_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Register of completed theses
+CREATE TABLE comp_thes (
+  thesis_id INT(10) NOT NULL,
+  sup_id INT(10),
+  subject VARCHAR(50),
+  grade INT(3),
+  PRIMARY KEY (thesis_id)
+);
+
+-- Triggers
+
+DROP TRIGGER IF EXISTS thesis_complete;
 DELIMITER $$
 CREATE TRIGGER thesis_complete
 AFTER UPDATE ON thesis
 FOR EACH ROW
 BEGIN
-IF new.status = "completed" THEN
-INSERT INTO comp_thes VALUES (new.thes_id, new.sup_id, new.subject, new.grade);
-END IF;
+  IF NEW.status = "completed" THEN
+    INSERT INTO comp_thes VALUES (NEW.thes_id, NEW.keysup_id, NEW.topic, NEW.grade);
+  END IF;
 END$$
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS `user_bucket`;
-
+DROP TRIGGER IF EXISTS user_bucket;
 DELIMITER $$
 CREATE TRIGGER user_bucket
 AFTER INSERT ON user
 FOR EACH ROW
 BEGIN
-IF new.user_type = "student" THEN
-INSERT INTO student VALUES (new.id, new.username, new.password, new.email, new.first_name, new.last_name, new.major, new.mobileNum, new.landlineNum, new.PostAddr);
-END IF;
-IF new.user_type = "professor" THEN
-INSERT INTO staff VALUES (new.id, new.username, new.password, new.email, new.first_name, new.last_name, new.department);
-INSERT INTO professor VALUES (new.id, new.first_name, new.email, new.department);
-END IF;
-IF new.user_type = "secretary" THEN
-INSERT INTO staff VALUES (new.id, new.username, new.password, new.email, new.first_name, new.last_name, new.department);
-INSERT INTO secretary VALUES (new.id, new.first_name, new.email, new.department);
-END IF;
+  IF NEW.userType = "student" THEN
+    INSERT INTO student VALUES (NEW.id, NEW.username, NEW.password, NEW.email, NEW.first_name, NEW.last_name, NEW.major, NEW.mobileNum, NEW.landlineNum, NEW.PostAddr);
+  END IF;
+  IF NEW.userType = "professor" THEN
+    INSERT INTO staff VALUES (NEW.id, NEW.username, NEW.password, NEW.email, NEW.first_name, NEW.last_name, NEW.department);
+    INSERT INTO professor VALUES (NEW.id, NEW.first_name, NEW.email, NEW.department);
+  END IF;
+  IF NEW.userType = "secretary" THEN
+    INSERT INTO staff VALUES (NEW.id, NEW.username, NEW.password, NEW.email, NEW.first_name, NEW.last_name, NEW.department);
+    INSERT INTO secretary VALUES (NEW.id, NEW.first_name, NEW.email, NEW.department);
+  END IF;
 END$$
 DELIMITER ;
 
-
-DROP TRIGGER IF EXISTS `Thes_activated`;
-
+DROP TRIGGER IF EXISTS Thes_activated;
 DELIMITER $$
-
 CREATE TRIGGER Thes_activated
 AFTER UPDATE ON pending_thes
 FOR EACH ROW
 BEGIN
-DECLARE current INT DEFAULT 0;
-IF NEW.Prof2Response = 'Accepted' THEN
-SET current = current + 1;
-END IF;
-IF NEW.Prof3Response = 'Accepted' THEN
-SET current = current + 1;
-END IF;
-IF current > 0 THEN
-UPDATE thesis 
-SET status = 'active',
-sup2_id = OLD.Prof2_id,
-sup3_id = OLD.Prof3_id
-WHERE thes_id = NEW.thes_id;
-END IF;
+  DECLARE current INT DEFAULT 0;
+  IF NEW.Prof2Response = 'Accepted' THEN
+    SET current = current + 1;
+  END IF;
+  IF NEW.Prof3Response = 'Accepted' THEN
+    SET current = current + 1;
+  END IF;
+  IF current > 0 THEN
+    UPDATE thesis 
+    SET status = 'active',
+        sup2_id = OLD.Prof2_id,
+        sup3_id = OLD.Prof3_id
+    WHERE thes_id = NEW.thes_id;
+  END IF;
 END$$
-
 DELIMITER ;
+
 
 
 
