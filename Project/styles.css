@@ -114,6 +114,24 @@ button:hover{  /*When button is hovered over*/
 .inactive{  /*to make content appear/dissappear*/
     display:none;
 }
+.content-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  width: 40%;              /* antes estaba en 60% */
+  max-width: 600px;        /* opcional para pantallas grandes */
+  max-height: 80vh;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+}
+
+
 
 /*.saca{
     width: 100%;
