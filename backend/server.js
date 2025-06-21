@@ -276,7 +276,7 @@ app.get('/api/users/ToAssign', (req, res) => {
 app.post('/api/users/MakeAssign', (req, res) => {
   const {topic, stud_id, Keysup_id} = req.body;
 
-  db.query('INSERT INTO thesis VALUES (?, NULL, "assigning", NULL, ?, NULL, NULL, ?)', 
+  db.query('INSERT INTO thesis VALUES (?, NULL, "assigning", NULL, ?, NULL, NULL, ?, NULL, NULL, NULL, NULL, NULL)', 
     [stud_id, topic, Keysup_id],
     (err, results) => {
       if(err) {
@@ -349,6 +349,23 @@ app.get('/api/users/thesStatus', (req, res) => {
   const stud_id = req.query.stud_id;
   db.query('SELECT status FROM thesis WHERE stud_id = ?', 
     [stud_id], 
+    (err, results) => {
+      if(err) {
+        console.log('Request unsuccessful');
+        console.error('Database error: ', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(results);
+      console.log(results);
+    }
+  )
+})
+
+//Get completed thesis data for student
+app.get('/api/users/finThes', (req, res) => {
+  const stud_id = req.query.stud_id;
+  db.query('SELECT topic, grade, examReport FROM comp_thes WHERE stud_id = ?', 
+    [stud_id],
     (err, results) => {
       if(err) {
         console.log('Request unsuccessful');

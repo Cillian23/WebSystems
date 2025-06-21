@@ -291,6 +291,22 @@ draftUp.addEventListener('click', () => {
   .catch(err => console.error('Error:', err));
 })
 }
+else if (theStatus == 3){
+  fetch(`http://localhost:3000/api/users/finThes?stud_id=${IDnumber.stud_id}`)  //pass in student id
+    .then(res => {
+        if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`);   //error if fetch result doesn't work
+    }
+    else {
+    return res.json();   //if it works return json version
+    }
+  })
+  .then(data => {
+    document.getElementById('finTopic').innerHTML = data[0].topic;
+    document.getElementById('finGrade').innerHTML = data[0].grade;
+    document.getElementById('finRep').href = data[0].examReport;
+  })
+}
 })
 
 });

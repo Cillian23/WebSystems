@@ -12,12 +12,19 @@ const Assign = document.querySelector('button.ini.ass');
 const InitAssign = document.querySelector('.InitialAssign');
 const ViewList = document.querySelector('button.vie.Lis');
 const listViewer = document.querySelector('.ThesisList');
+const noResult = document.querySelector('.NoResults');
 
 
 console.log(localStorage.getItem('IDnumber'));
 
 const profID = localStorage.getItem('IDnumber');
 
+
+//Function when returned data has no result
+function emptyResult(){
+  noResult.classList.toggle('inactive');
+  noResult.classList.toggle('active');
+}
 
 
 popCanc.addEventListener('click', () => {     //Adding X out button for each menu, which turns off all menus, stops buttons interfering with each other 
@@ -31,7 +38,9 @@ popCanc.addEventListener('click', () => {     //Adding X out button for each men
         InitAssign.classList.add('inactive');
         InitAssign.classList.remove('active');
         listViewer.classList.add('inactive');   
-        listViewer.classList.remove('active');   
+        listViewer.classList.remove('active');  
+        noResult.classList.add('inactive');
+        noResult.classList.remove('active'); 
      /* studentTopic.classList.remove('active');  //Just a template
         profile.classList.remove('active');
         thesStatus[theStatus].classList.remove('active');
@@ -169,6 +178,9 @@ viewInvs.addEventListener('click', () => {
                 count++;
             });      
         }
+        else{
+          emptyResult();
+        }
         //Adding event listeners to update database
         const acceptBtns = document.querySelectorAll(`.invAccept`);   //Add event listener for each of the created buttons, accept
          console.log(acceptBtns);
@@ -287,7 +299,7 @@ Assign.addEventListener('click', () => {
             AssignButton.addEventListener('click', () => {
               var info = {
                 topic: item.querySelector('.TopicTitle').innerText,
-                stud_id: item.querySelector('input[name="studID"').value,
+                stud_id: item.querySelector('input[name="studID"]').value,
                 Keysup_id: profID
               }
               sendTopicSubmit(info);
@@ -433,6 +445,9 @@ ViewList.addEventListener('click', () => {
                 count++;
             });
              createFilter();                                      //Add filter button
+           }
+           else{
+            emptyResult();
            }
 
            const selectTheses = listViewer.querySelectorAll('button.Select');
