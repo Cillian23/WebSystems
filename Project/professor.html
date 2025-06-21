@@ -5,24 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Instructor Dashboard</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <h1>Welcome Instructor</h1>
 
-  <!-- Menu -->
+  <!-- Main Menu -->
   <div class="menu">
     <div class="box">
       <button class="cre th">Create Thesis Topic</button><br/>
       <button class="vie th">View Thesis Topics</button><br/>
       <button class="ini ass">Initial Assignment of a Topic</button><br/>
       <button class="vie Lis">View List of Theses</button><br/>
-      <button class="vie Inv">View Invitations to a Three-Member Committees</button><br/>
+      <button class="vie Inv">View Invitations to Committees</button><br/>
       <button class="vie sta">View Statistics</button><br/>
-      <button class="man the">Management of These</button><br/>
+      <button class="man the">Manage Theses</button><br/>
     </div>
   </div>
 
-  <!-- Logout -->
+  <!-- Logout Button -->
   <form>
     <button class="out" type="submit" formaction="index.html">Log Out</button>
   </form>
@@ -47,7 +48,7 @@
     </div>
   </div>
 
-  <!-- Assignment Modal -->
+  <!-- Assign Topic Modal -->
   <div class="modal-overlay" id="assignTopicForm" style="display: none;">
     <div class="modal-content">
       <button class="close-btn" id="closeAssignModal">X</button>
@@ -67,51 +68,48 @@
     </div>
   </div>
 
-  <!-- Management Panel -->
+  <!-- Thesis Management Panel -->
   <div id="thesisManagement" class="content-panel" style="display: none;">
     <button class="close-btn" id="closeManageModal">X</button>
-    <h3>Manage Theses</h3>
-    <ul id="thesisList"></ul>
+    <h3 style="color:#04AA6D;">Manage Theses</h3>
+    <ul id="thesisList" class="box" style="list-style: none; padding: 20px;"></ul>
+    <div id="invitationDetails" style="margin-top: 15px; display: none;">
+      <h4>Invited Committee Members</h4>
+      <ul id="invitationList" style="padding-left: 15px;"></ul>
+    </div>
   </div>
 
   <!-- View Topics Panel -->
   <div id="viewTopicsPanel" class="content-panel" style="display: none;">
     <button class="close-btn" id="closeViewTopics">X</button>
-    <h3>Thesis Topics</h3>
-    <ul id="topicsList">
-      <li>Example Topic 1</li>
-      <li>Example Topic 2</li>
-    </ul>
+    <h3>Your Created Thesis Topics</h3>
+    <ul id="createdTopicsList" style="list-style: none; padding: 0;"></ul>
   </div>
 
   <!-- List of Theses Panel -->
   <div id="listThesesPanel" class="content-panel" style="display: none;">
     <button class="close-btn" id="closeListPanel">X</button>
     <h3>List of Theses</h3>
-    <ul id="listThesesContent">
-      <li>Thesis A</li>
-      <li>Thesis B</li>
-    </ul>
+    <ul id="listThesesContent"></ul>
   </div>
 
   <!-- Invitations Panel -->
   <div id="invitationPanel" class="content-panel" style="display: none;">
     <button class="close-btn" id="closeInvitations">X</button>
     <h3>Committee Invitations</h3>
-    <ul id="invitationsList">
-      <li>Invite 1</li>
-      <li>Invite 2</li>
-    </ul>
+    <ul id="invitationsList"></ul>
   </div>
 
   <!-- Statistics Panel -->
   <div id="statisticsPanel" class="content-panel" style="display: none;">
     <button class="close-btn" id="closeStatistics">X</button>
     <h3>Statistics</h3>
-    <p>Coming soon...</p>
+    <canvas id="avgCompletionChart" width="400" height="200"></canvas>
+    <canvas id="avgGradeChart" width="400" height="200"></canvas>
+    <canvas id="totalThesesChart" width="400" height="200"></canvas>
   </div>
 
-  <!-- JS -->
+  <!-- Script -->
   <script src="professor.js" defer></script>
 </body>
 </html>
