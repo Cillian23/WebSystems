@@ -1,7 +1,13 @@
--- Delete tables if they exist (in correct order by dependencies)DROP TABLE IF EXISTS comp_thes;
+-- ============================
+-- RESET: Eliminar tablas
+-- ============================
+DROP TABLE IF EXISTS comp_thes;
 DROP TABLE IF EXISTS pending_thes;
 DROP TABLE IF EXISTS supervised;
 DROP TABLE IF EXISTS thesis;
+DROP TABLE IF EXISTS thesis_notes;
+DROP TABLE IF EXISTS grades;
+DROP TABLE IF EXISTS presentations;
 DROP TABLE IF EXISTS topics;
 DROP TABLE IF EXISTS professor;
 DROP TABLE IF EXISTS secretary;
@@ -9,7 +15,9 @@ DROP TABLE IF EXISTS staff;
 DROP TABLE IF EXISTS student;
 DROP TABLE IF EXISTS user;
 
--- Main user table
+-- ============================
+-- Tabla base de usuarios
+-- ============================
 CREATE TABLE user (
   id INT(10) NOT NULL, 
   first_name VARCHAR(50),
@@ -27,7 +35,9 @@ CREATE TABLE user (
   UNIQUE KEY (username)
 );
 
--- Student subtable
+-- ============================
+-- Subtabla de estudiantes
+-- ============================
 CREATE TABLE student (
   id INT(8) NOT NULL,
   username VARCHAR(40) NOT NULL,
@@ -43,7 +53,9 @@ CREATE TABLE student (
   UNIQUE KEY (username)
 );
 
--- Academic staff table
+-- ============================
+-- Personal académico (base)
+-- ============================
 CREATE TABLE staff (
   id INT(10) NOT NULL,
   username VARCHAR(40) NOT NULL,
@@ -56,7 +68,9 @@ CREATE TABLE staff (
   UNIQUE KEY (username)
 );
 
--- Secretary
+-- ============================
+-- Secretarías
+-- ============================
 CREATE TABLE secretary (
   sec_id INT(10) NOT NULL,
   first_name VARCHAR(50),
@@ -66,7 +80,9 @@ CREATE TABLE secretary (
   FOREIGN KEY (sec_id) REFERENCES staff(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- Professor
+-- ============================
+-- Profesores
+-- ============================
 CREATE TABLE professor (
   prof_id INT(10) NOT NULL,
   first_name VARCHAR(50),
@@ -76,32 +92,39 @@ CREATE TABLE professor (
   FOREIGN KEY (prof_id) REFERENCES staff(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- Proposed topics
+-- ============================
+-- Tópicos propuestos
+-- ============================
 CREATE TABLE topics (
-  topic VARCHAR(200) NOT NULL,
-  department VARCHAR(50),
-  prof_id INT(10) NOT NULL,
-  PRIMARY KEY (topic, prof_id),
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  prof_id INT NOT NULL,
   FOREIGN KEY (prof_id) REFERENCES professor(prof_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- Thesis
+-- ============================
+-- Tesis
+-- ============================
 CREATE TABLE thesis (
   stud_id INT(8) NOT NULL,
   thes_id INT(10) NOT NULL,
   keysup_id INT(10) NOT NULL,
   sup2_id INT(10),
   sup3_id INT(10),
-  topic VARCHAR(200) NOT NULL,
+  topic VARCHAR(255) NOT NULL,
   status ENUM("assigning", "active", "examining", "completed"),
   grade INT(3),
+  assignment_date DATE,
+  completion_date DATE,
   PRIMARY KEY(stud_id, thes_id),
   UNIQUE KEY (thes_id),
-  FOREIGN KEY (stud_id) REFERENCES student(id) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY (topic, keysup_id) REFERENCES topics(topic, prof_id) ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY (stud_id) REFERENCES student(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- Supervisory relationship
+-- ============================
+-- Supervisiones
+-- ============================
 CREATE TABLE supervised (
   sup_id INT(10) NOT NULL,
   thesis_id INT(10) NOT NULL,
@@ -109,7 +132,9 @@ CREATE TABLE supervised (
   FOREIGN KEY (thesis_id) REFERENCES thesis(thes_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- Pending invitations to committee members
+-- ============================
+-- Invitaciones pendientes
+-- ============================
 CREATE TABLE pending_thes (
   stud_id INT(10) NOT NULL,
   thes_id INT(10) NOT NULL,
@@ -122,7 +147,9 @@ CREATE TABLE pending_thes (
   FOREIGN KEY (thes_id) REFERENCES thesis(thes_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- Register of completed theses
+-- ============================
+-- Tesis completadas
+-- ============================
 CREATE TABLE comp_thes (
   thesis_id INT(10) NOT NULL,
   sup_id INT(10),
@@ -131,7 +158,42 @@ CREATE TABLE comp_thes (
   PRIMARY KEY (thesis_id)
 );
 
--- Triggers
+-- ============================
+-- Notas de tesis
+-- ============================
+CREATE TABLE thesis_notes (
+  note_id INT AUTO_INCREMENT PRIMARY KEY,
+  thes_id INT,
+  prof_id INT,
+  note TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================
+-- Calificaciones
+-- ============================
+CREATE TABLE grades (
+  grade_id INT AUTO_INCREMENT PRIMARY KEY,
+  thes_id INT,
+  prof_id INT,
+  criteria1 INT,
+  criteria2 INT,
+  total_grade INT
+);
+
+-- ============================
+-- Presentaciones
+-- ============================
+CREATE TABLE presentations (
+  thes_id INT PRIMARY KEY,
+  date DATE,
+  time TIME,
+  location VARCHAR(100)
+);
+
+-- ============================
+-- TRIGGERS
+-- ============================
 
 DROP TRIGGER IF EXISTS thesis_complete;
 DELIMITER $$
@@ -187,9 +249,3 @@ BEGIN
   END IF;
 END$$
 DELIMITER ;
-
-
-
-
-																																																																																														
-

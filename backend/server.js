@@ -1,25 +1,22 @@
-// Load environment variables
 require('dotenv').config({ path: __dirname + '/.env' });
 
-// Import required packages
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2');
 
-// Initialize Express app
 const app = express();
 const port = 3000;
 
-// Middleware
+// Middleware setup
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Log environment variables
+// Environment variable debug logs
 console.log('DB_USER:', process.env.DB_USER);
 console.log('DB_NAME:', process.env.DB_NAME);
 
-// Connect to MySQL
+// MySQL database connection
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -35,15 +32,11 @@ db.connect(err => {
   console.log('✅ Connected to MySQL');
 });
 
-// ========== ROUTES ==========
-
-// Simple login route (based on username/password)
+// === USER AUTHENTICATION ===
 app.post('/api/users/search', (req, res) => {
   const { username, password } = req.body;
-
-  if (!username || !password) {
+  if (!username || !password)
     return res.status(400).json({ error: 'Missing credentials' });
-  }
 
   db.query(
     'SELECT * FROM user WHERE username = ? AND password = ?',
@@ -55,83 +48,241 @@ app.post('/api/users/search', (req, res) => {
   );
 });
 
-// Get thesis details for a student
-app.post('/api/users/thesis', (req, res) => {
-  const { stud_id } = req.body;
+// === INSTRUCTOR FUNCTIONALITIES ===
 
-  if (!stud_id) {
-    return res.status(400).json({ error: 'Missing student ID' });
-  }
+// Fetch statistics for instructor
+app.get('/api/instructor/:id/statistics', (req, res) => {
+  const profId = parseInt(req.params.id);
+  if (!profId) return res.status(400).json({ message: 'Missing professor ID' });
+
+  const sql = `
+    SELECT
+      (SELECT AVG(TIMESTAMPDIFF(MONTH, assignment_date, completion_date)) FROM thesis WHERE keysup_id = ?) AS avg_time_supervisor,
+      (SELECT AVG(TIMESTAMPDIFF(MONTH, assignment_date, completion_date)) FROM thesis WHERE sup2_id = ? OR sup3_id = ?) AS avg_time_member,
+      (SELECT AVG(g.total_grade) FROM grades g JOIN thesis t ON t.thes_id = g.thes_id WHERE g.prof_id = ? AND t.keysup_id = ?) AS avg_grade_supervisor,
+      (SELECT AVG(g.total_grade) FROM grades g JOIN thesis t ON t.thes_id = g.thes_id WHERE g.prof_id = ? AND (t.sup2_id = ? OR t.sup3_id = ?)) AS avg_grade_member,
+      (SELECT COUNT(*) FROM thesis WHERE keysup_id = ?) AS total_supervised,
+      (SELECT COUNT(*) FROM thesis WHERE sup2_id = ? OR sup3_id = ?) AS total_member
+  `;
+
+  const values = [profId, profId, profId, profId, profId, profId, profId, profId, profId, profId, profId];
+
+  db.query(sql, values, (err, results) => {
+    if (err) {
+      console.error('❌ Error fetching statistics:', err);
+      return res.status(500).json({ message: 'Failed to fetch statistics' });
+    }
+    res.json(results[0]);
+  });
+});
+
+// Get theses related to instructor
+app.get('/api/instructor/theses', (req, res) => {
+  const prof_id = parseInt(req.query.prof_id);
+  if (!prof_id)
+    return res.status(400).json({ message: 'Missing professor ID' });
+
+  const sql = `
+    SELECT t.thes_id, t.stud_id, t.status, t.topic, t.keysup_id, t.assignment_date,
+           pt.Prof2_id, pt.Prof2Response, pt.Prof3_id, pt.Prof3Response
+    FROM thesis t
+    LEFT JOIN pending_thes pt ON pt.thes_id = t.thes_id
+    WHERE t.keysup_id = ? OR t.sup2_id = ? OR t.sup3_id = ?
+  `;
+
+  db.query(sql, [prof_id, prof_id, prof_id], (err, results) => {
+    if (err) return res.status(500).json({ message: 'Error loading theses' });
+    res.json(results);
+  });
+});
+
+// View committee invitations
+app.get('/api/instructor/theses/:id/invitations', (req, res) => {
+  const { id } = req.params;
+
+  const sql = `
+    SELECT Prof2_id, Prof3_id, Prof2Response, Prof3Response
+    FROM pending_thes
+    WHERE thes_id = ?
+  `;
+
+  db.query(sql, [id], (err, results) => {
+    if (err) return res.status(500).json({ message: 'Error loading invitations' });
+    res.json(results[0] || {});
+  });
+});
+
+// Cancel a thesis assignment
+app.post('/api/instructor/theses/:id/cancel', (req, res) => {
+  const { id } = req.params;
+
+  const deletePending = 'DELETE FROM pending_thes WHERE thes_id = ?';
+  const deleteSupervised = 'DELETE FROM supervised WHERE thesis_id = ?';
+  const deleteThesis = 'DELETE FROM thesis WHERE thes_id = ?';
+
+  db.query(deletePending, [id], err => {
+    if (err) return res.status(500).json({ message: 'Error deleting pending' });
+
+    db.query(deleteSupervised, [id], err => {
+      if (err) return res.status(500).json({ message: 'Error deleting supervision links' });
+
+      db.query(deleteThesis, [id], err => {
+        if (err) return res.status(500).json({ message: 'Error deleting thesis' });
+        res.json({ message: 'Thesis assignment canceled' });
+      });
+    });
+  });
+});
+
+// Add a note to a thesis
+app.post('/api/instructor/theses/:id/notes', (req, res) => {
+  const { id } = req.params;
+  const { profId, noteText } = req.body;
+
+  if (!profId || !noteText)
+    return res.status(400).json({ message: 'Missing data' });
 
   db.query(
-    'SELECT topic, status, keysup_id, sup2_id, sup3_id FROM thesis WHERE stud_id = ?',
-    [stud_id],
+    'INSERT INTO thesis_notes (thes_id, prof_id, note) VALUES (?, ?, ?)',
+    [id, profId, noteText],
+    err => {
+      if (err) return res.status(500).json({ message: 'Failed to save note' });
+      res.json({ message: 'Note saved successfully' });
+    }
+  );
+});
+
+// Mark a thesis as under examination
+app.post('/api/instructor/theses/:id/mark-exam', (req, res) => {
+  const { id } = req.params;
+  db.query('UPDATE thesis SET status = "examining" WHERE thes_id = ?', [id], err => {
+    if (err) return res.status(500).json({ message: 'Error updating status' });
+    res.json({ message: 'Thesis marked as examining' });
+  });
+});
+
+// View thesis announcement (placeholder)
+app.get('/api/instructor/theses/:id/announcement', (req, res) => {
+  res.json({ text: 'Presentation scheduled for [date/time]' });
+});
+
+// Submit a grade for a thesis
+app.post('/api/instructor/theses/:id/grade', (req, res) => {
+  const { id } = req.params;
+  const { profId, criteria1 = 0, criteria2 = 0, total_grade } = req.body;
+
+  const sql = `
+    INSERT INTO grades (thes_id, prof_id, criteria1, criteria2, total_grade)
+    VALUES (?, ?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE
+      criteria1 = VALUES(criteria1),
+      criteria2 = VALUES(criteria2),
+      total_grade = VALUES(total_grade)
+  `;
+
+  db.query(sql, [id, profId, criteria1, criteria2, total_grade], err => {
+    if (err) return res.status(500).json({ message: 'Failed to record grade' });
+    res.json({ message: 'Grade saved' });
+  });
+});
+app.get('/api/stats', (req, res) => {
+  const profId = parseInt(req.query.prof_id);
+  if (!profId) return res.status(400).json({ message: 'Missing professor ID' });
+
+  const sql = `
+    SELECT
+      -- Average completion time in months
+      (SELECT AVG(TIMESTAMPDIFF(MONTH, assignment_date, completion_date)) 
+         FROM thesis WHERE keysup_id = ?) AS supervisor_avg_completion,
+      (SELECT AVG(TIMESTAMPDIFF(MONTH, assignment_date, completion_date)) 
+         FROM thesis WHERE sup2_id = ? OR sup3_id = ?) AS committee_avg_completion,
+
+      -- Average grades
+      (SELECT AVG(g.total_grade) 
+         FROM grades g JOIN thesis t ON g.thes_id = t.thes_id 
+         WHERE g.prof_id = ? AND t.keysup_id = ?) AS supervisor_avg_grade,
+      (SELECT AVG(g.total_grade) 
+         FROM grades g JOIN thesis t ON g.thes_id = t.thes_id 
+         WHERE g.prof_id = ? AND (t.sup2_id = ? OR t.sup3_id = ?)) AS committee_avg_grade,
+
+      -- Total theses
+      (SELECT COUNT(*) FROM thesis WHERE keysup_id = ?) AS supervisor_total,
+      (SELECT COUNT(*) FROM thesis WHERE sup2_id = ? OR sup3_id = ?) AS committee_total
+  `;
+
+  const values = Array(11).fill(profId);
+
+  db.query(sql, values, (err, results) => {
+    if (err) {
+      console.error('❌ Stats error:', err);
+      return res.status(500).json({ message: 'Stats query failed' });
+    }
+
+    const row = results[0];
+    res.json({
+      supervisor: {
+        avg_completion: row.supervisor_avg_completion,
+        avg_grade: row.supervisor_avg_grade,
+        total: row.supervisor_total
+      },
+      committee: {
+        avg_completion: row.committee_avg_completion,
+        avg_grade: row.committee_avg_grade,
+        total: row.committee_total
+      }
+    });
+  });
+});
+
+
+// === TOPIC MANAGEMENT ===
+
+// Get topics created by an instructor
+app.get('/api/instructor/topics', (req, res) => {
+  const profId = req.query.prof_id;
+  console.log('🔍 GET /topics - prof_id:', profId);
+  db.query(
+    'SELECT topic, title, description FROM topics WHERE prof_id = ?',
+    [profId],
     (err, results) => {
-      if (err) return res.status(500).json({ error: 'Database error' });
+      if (err) {
+        console.error('❌ DB error in /topics:', err);
+      return res.status(500).json({ message: 'Database error' });}
       res.json(results);
     }
   );
 });
 
-// Instructor: get list of theses they supervise
-app.get('/api/instructor/theses', (req, res) => {
-  const instructor_id = parseInt(req.query.prof_id);
-   // Replace with dynamic value in real app
-  if (!instructor_id) {
-    return res.status(400).json({ message: 'Missing professor ID' });
-  }
-  const sql = `
-    SELECT t.thes_id, t.stud_id, t.status, t.topic
-    FROM thesis t
-    WHERE t.keysup_id = ? OR t.sup2_id = ? OR t.sup3_id = ?
-  `;
+// Update a specific topic
+app.put('/api/instructor/topics/:id', (req, res) => {
+  const { title, description } = req.body;
+  const id = req.params.id;
 
-  db.query(sql, [instructor_id, instructor_id, instructor_id], (err, results) => {
-    if (err) {
-      console.error('❌ DB Error in /theses:', err);
-      return res.status(500).json({ message: 'Error loading theses' });
+  db.query(
+    'UPDATE topics SET title = ?, description = ? WHERE id = ?',
+    [title, description, id],
+    err => {
+      if (err) return res.status(500).json({ message: 'Failed to update topic' });
+      res.json({ message: 'Topic updated successfully' });
     }
-
-    res.json(results);
-  });
+  );
 });
 
-// Instructor: mark thesis as under examination
-app.post('/api/instructor/theses/:id/mark-exam', (req, res) => {
-  const thesisId = req.params.id;
+// Create a new topic
+app.post('/api/instructor/topics', (req, res) => {
+  const { title, description, prof_id } = req.body;
+  if (!title || !description || !prof_id)
+    return res.status(400).json({ message: 'Missing fields' });
 
-  const sql = `UPDATE thesis SET status = 'examining' WHERE thes_id = ?`;
-
-  db.query(sql, [thesisId], (err, result) => {
-    if (err) {
-      console.error('❌ Error updating thesis status:', err);
-      return res.status(500).json({ message: 'Failed to update status' });
+  db.query(
+    'INSERT INTO topics (title, description, prof_id) VALUES (?, ?, ?)',
+    [title, description, prof_id],
+    err => {
+      if (err) return res.status(500).json({ message: 'Failed to create topic' });
+      res.json({ message: 'Topic created' });
     }
-
-    res.json({ message: 'Thesis marked as under examination' });
-  });
+  );
 });
-
-// Instructor: create a new thesis topic (PDF upload can be added later)
-app.get('/api/instructor/theses', (req, res) => {
-  const instructor_id = parseInt(req.query.prof_id);
-  if (!instructor_id) return res.status(400).json({ message: 'Missing professor ID' });
-
-  const sql = `
-    SELECT t.thes_id, t.stud_id, t.status, t.topic
-    FROM thesis t
-    WHERE t.keysup_id = ? OR t.sup2_id = ? OR t.sup3_id = ?
-  `;
-
-  db.query(sql, [instructor_id, instructor_id, instructor_id], (err, results) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ message: 'Error loading theses' });
-    }
-    res.json(results);
-  });
-});
-
 
 // Start the server
 app.listen(port, () => {
