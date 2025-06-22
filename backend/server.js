@@ -186,7 +186,21 @@ app.post('/api/users/uploadTopic', (req, res) => {
       );
 
 });
-
+//Get topics for professor
+app.get('/api/users/myTopics', (req, res) => {
+  const prof_id = req.query.prof_id;
+  db.query('SELECT topicTitle FROM topics WHERE prof_id = ?',
+    [prof_id],
+    (err, results) => {
+             if(err) {
+               console.log('Insertion unsuccessful');
+               console.error('Database error:', err);
+               return res.status(500).json({ error: 'Database error' });
+             }
+             res.json(results);
+           }
+  );
+})
 //Upload thesis draft and otherrelevant info
 app.post('/api/users/upDraft', (req, res) => {
   const {draft, extraLink1, extraLink2, examDate, examLoc, stud_id} = req.body;
@@ -275,9 +289,10 @@ app.get('/api/users/ToAssign', (req, res) => {
 //Send thesis Assignment to db, create entry
 app.post('/api/users/MakeAssign', (req, res) => {
   const {topic, stud_id, Keysup_id} = req.body;
+  const date = new Date();
 
-  db.query('INSERT INTO thesis VALUES (?, NULL, "assigning", NULL, ?, NULL, NULL, ?, NULL, NULL, NULL, NULL, NULL)', 
-    [stud_id, topic, Keysup_id],
+  db.query('INSERT INTO thesis VALUES (?, NULL, "assigning", NULL, ?, NULL, NULL, ?, NULL, NULL, NULL, NULL, NULL, NULL, ?, NULL, NULL, NULL)', 
+    [stud_id, topic, Keysup_id, date],
     (err, results) => {
       if(err) {
         console.log('Request unsuccessful');
@@ -377,6 +392,81 @@ app.get('/api/users/finThes', (req, res) => {
     }
   )
 })
+
+//Get statistics
+app.get('/api/users/stats', (req, res) => {
+  const profId = req.query.prof_id;
+  if (!profId) return res.status(400).json({ message: 'Missing professor ID' });
+  const sql = `
+    SELECT
+      (SELECT AVG(TIMESTAMPDIFF(MONTH, assignment_date, completion_date)) FROM thesis WHERE keysup_id = ?) AS avg_time_supervisor,
+      (SELECT AVG(TIMESTAMPDIFF(MONTH, assignment_date, completion_date)) FROM thesis WHERE sup2_id = ? OR sup3_id = ?) AS avg_time_member,
+      (SELECT AVG(g.total_grade) FROM grades g JOIN thesis t ON t.thes_id = g.thes_id WHERE g.prof_id = ? AND t.keysup_id = ?) AS avg_grade_supervisor,
+      (SELECT AVG(g.total_grade) FROM grades g JOIN thesis t ON t.thes_id = g.thes_id WHERE g.prof_id = ? AND (t.sup2_id = ? OR t.sup3_id = ?)) AS avg_grade_member,
+      (SELECT COUNT(*) FROM thesis WHERE keysup_id = ?) AS total_supervised,
+      (SELECT COUNT(*) FROM thesis WHERE sup2_id = ? OR sup3_id = ?) AS total_member
+  `;
+  const values = [profId, profId, profId, profId, profId, profId, profId, profId, profId, profId, profId];
+  db.query(sql, values, (err, results) => {
+    if (err) {
+      console.error('❌ Error fetching statistics:', err);
+      return res.status(500).json({ message: 'Failed to fetch statistics' });
+    }
+  
+    const data = results[0];
+    const response = {
+      supervisor: {
+        avg_completion: data.avg_time_supervisor || 0,
+        avg_grade: data.avg_grade_supervisor || 0,
+        total: data.total_supervised || 0
+      },
+      committee: {
+        avg_completion: data.avg_time_member || 0,
+        avg_grade: data.avg_grade_member || 0,
+        total: data.total_member || 0
+      }
+    };
+    
+    res.json(response);
+  });
+});
+
+//View all invites for a thesis
+app.get('/api/instructor/theses/:id/invitations', (req, res) => {
+  const { id } = req.params;
+
+  const sql = `
+    SELECT Prof2_id, Prof3_id, Prof2Response, Prof3Response
+    FROM pending_thes
+    WHERE thes_id = ?
+  `;
+
+  db.query(sql, [id], (err, results) => {
+    if (err) return res.status(500).json({ message: 'Error loading invitations' });
+    res.json(results[0] || {});
+  });
+});
+
+// Submit a grade for a thesis
+app.post('/api/instructor/theses/:id/grade', (req, res) => {
+  const { id } = req.params;
+  const { profId, criteria1 = 0, criteria2 = 0, total_grade } = req.body;
+
+  const sql = `
+    INSERT INTO grades (thes_id, prof_id, criteria1, criteria2, total_grade)
+    VALUES (?, ?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE
+      criteria1 = VALUES(criteria1),
+      criteria2 = VALUES(criteria2),
+      total_grade = VALUES(total_grade)
+  `;
+
+  db.query(sql, [id, profId, criteria1, criteria2, total_grade], err => {
+    if (err) return res.status(500).json({ message: 'Failed to record grade' });
+    res.json({ message: 'Grade saved' });
+  });
+  console.log("Grade");
+});
 
 //Don't think this is actually necessary, all data loaded in at start, only need to send back updated details
 /*app.post('/api/users/search', (req, res) => {     //Queries database for profile details e.g. address and number after student clicks edit profile
