@@ -26,30 +26,7 @@ DROP TABLE IF EXISTS `student`;
 CREATE TABLE student (
 id INT(8) NOT NULL,
 username VARCHAR(40) NOT NULL,
-password VARCHAR(40) NOT NULL,
-email VARCHAR(40),
-first_name VARCHAR(50),
-last_name VARCHAR(50),
-major VARCHAR(50),
-mobileNum INT(10),
-landlineNum INT(10),
-PostAddr VARCHAR(250),
-PRIMARY KEY (id),
-UNIQUE KEY (username)
-);
-
-DROP TABLE IF EXISTS `staff`;
-
-CREATE TABLE staff (
-id INT(10) NOT NULL,
-username VARCHAR(40) NOT NULL,
-password VARCHAR(40) NOT NULL,
-email VARCHAR(40),
-first_name VARCHAR(50),
-last_name VARCHAR(50),
-department VARCHAR(50),
-PRIMARY KEY (id),
-UNIQUE KEY (username)
+password VARCHAR(40) NOT NULL
 );
 
 DROP TABLE IF EXISTS `secretary`;
@@ -60,7 +37,7 @@ CREATE TABLE secretary (
     email VARCHAR(40),
     department VARCHAR(50),
     PRIMARY KEY (sec_id),
-    CONSTRAINT `secID` FOREIGN KEY (`sec_id`) REFERENCES `staff`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT `secID` FOREIGN KEY (`sec_id`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 DROP TABLE IF EXISTS `professor`;
@@ -71,7 +48,7 @@ first_name VARCHAR(50),
 email VARCHAR(40),
 department VARCHAR(50),
 PRIMARY KEY (prof_id),
-CONSTRAINT `profID` FOREIGN KEY (`prof_id`) REFERENCES `staff`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+CONSTRAINT `profID` FOREIGN KEY (`prof_id`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 DROP TABLE IF EXISTS `thesis`;
@@ -85,6 +62,16 @@ Keysup_id INT(10) NOT NULL,
 topic VARCHAR(250) NOT NULL,
 status ENUM ("assigning", "active", "examining", "completed"),
 grade INT(3),
+draft MEDIUMBLOB,
+extraLink1 VARCHAR(300),
+extraLink2 VARCHAR(300),
+examDate DATETIME,
+examLoc VARCHAR(300),
+examReport MEDIUMBLOB,
+assignment_date DATE,
+completion_date DATE,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 PRIMARY KEY(stud_id, thes_id),
 UNIQUE KEY(thes_id),
 CONSTRAINT `auth` FOREIGN KEY (`stud_id`) REFERENCES student(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -116,12 +103,14 @@ CONSTRAINT `whichThes` FOREIGN KEY (`thes_id`) REFERENCES thesis(`thes_id`) ON D
 DROP TABLE IF EXISTS `comp_thes`;
 
 CREATE TABLE comp_thes (
+stud_id INT(10),
 thesis_id INT(10) NOT NULL,
 Keysup_id INT(10),
 sup2_id INT(10),
 sup3_id INT(10),
 topic VARCHAR(250),
 grade INT(3),
+examReport MEDIUMBLOB
 PRIMARY KEY (thesis_id)
 );
 
@@ -136,6 +125,17 @@ PRIMARY KEY (topicTitle, prof_id),
 CONSTRAINT `realProf` FOREIGN KEY (`prof_id`) REFERENCES professor (`prof_id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+DROP TABLE IF EXISTS `grades`;
+
+CREATE TABLE grades (
+  grade_id INT AUTO_INCREMENT PRIMARY KEY,
+  thes_id INT,
+  prof_id INT,
+  criteria1 INT,
+  criteria2 INT,
+  total_grade INT
+);
+
 DROP TRIGGER IF EXISTS `thesis_complete`;
 
 DELIMITER $$
@@ -144,7 +144,7 @@ AFTER UPDATE ON thesis
 FOR EACH ROW
 BEGIN
 IF new.status = "completed" THEN
-INSERT INTO comp_thes VALUES (new.thes_id, new.sup_id, new.subject, new.grade);
+INSERT INTO comp_thes VALUES (new.stud_id, new.thes_id, new.Keysup_id, new.sup2_id, new.sup3_id, new.topic, new.grade, new.examReport);
 END IF;
 END$$
 DELIMITER ;
@@ -199,6 +199,4 @@ DELIMITER ;
 
 
 																																																																																														
-
-
 
