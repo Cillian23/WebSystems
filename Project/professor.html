@@ -44,6 +44,10 @@
         <br/>
         <button type="submit" name="SubTopic">Save</button>
     </div>
+
+    <div class="TopicView inactive">
+        <!--Created in script-->
+    </div>
     
     <div class="PendingInvites inactive">
         <!--Created in the script-->
@@ -56,6 +60,20 @@
     <div class="ThesisList inactive">
         <!--Created in the script-->
     </div>
+
+    <div class="StatisticsPanel inactive">
+        <!-- Created in the script -->
+    </div>
+
+     <div id="thesisManagement" class="inactive content-panel">
+    <button class="close-btn" id="closeManageModal">X</button>
+    <h3 style="color:#04AA6D;">Manage Theses</h3>
+    <ul id="thesisList" class="box" style="list-style: none; padding: 20px;"></ul>
+    <div id="invitationDetails" style="margin-top: 15px; display: none;">
+      <h4>Invited Committee Members</h4>
+      <ul id="invitationList" style="padding-left: 15px;"></ul>
+    </div>
+  </div>
 
     <div class="NoResults inactive">
         Sorry, no results found :/
@@ -70,6 +88,7 @@
         <button class="out" type="submit" formaction="index.html">Log Out</button>
     </form>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!--For stats-->
     <script src="professor.js" defer></script> <!--Lets all elements load before javascript code kicks in-->
 </body>
 </html>
