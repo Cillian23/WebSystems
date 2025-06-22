@@ -135,9 +135,52 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 
   // MANAGEMENT OF THESES
+  function loadTheses() {
+  const profId = localStorage.getItem("prof_id");
+  if (!profId) return alert("Missing professor ID");
+
+  fetch(`http://localhost:3000/api/instructor/theses?prof_id=${profId}`)
+    .then(res => {
+      if (!res.ok) throw new Error("Unexpected response");
+      return res.json();
+    })
+    .then(data => {
+      console.log("Fetched theses:", data); // 👈 Te mostrará si hay resultados
+      const list = document.getElementById("thesisList");
+      list.innerHTML = "";
+
+      if (data.length === 0) {
+        list.innerHTML = "<li>No theses found</li>";
+        return;
+      }
+
+      data.forEach(thesis => {
+        const item = document.createElement("li");
+        item.innerHTML = `
+          <strong>Topic:</strong> ${thesis.topic}<br>
+          <strong>Status:</strong> ${thesis.status}<br>
+          <strong>Student:</strong> ${thesis.stud_id}
+        `;
+        if (list) {
+          list.appendChild(item);
+        } else {
+          console.error("❌ thesisList not found in the DOM");
+}
+
+        list.appendChild(item);
+      });
+    })
+    .catch(err => {
+      console.error("Error loading theses:", err);
+      const list = document.getElementById("thesisList");
+      list.innerHTML = "<li style='color:red;'>Error loading theses</li>";
+    });
+}
+
   document.querySelector('.man.the')?.addEventListener('click', async () => {
     showPanel('thesisManagement');
-    const list = document.getElementById('thesisList');
+    const list =   document.getElementById("thesisManagement").style.display = "block";
+    loadTheses();
     list.innerHTML = '';
     document.getElementById('invitationDetails').style.display = 'none';
 
@@ -151,20 +194,34 @@ document.addEventListener('DOMContentLoaded', () => {
         li.innerHTML = `<strong>${thesis.topic}</strong> (Student: ${thesis.stud_id}) - ${thesis.status}<br/>`;
 
         if (thesis.status === 'assigning') {
-          li.innerHTML += `
-            <button onclick="viewInvitations(${thesis.thes_id})">View Invitations</button>
-            <button onclick="cancelThesis(${thesis.thes_id})">Cancel Assignment</button>
-          `;
-        }
+        fetch(`http://localhost:3000/api/instructor/theses/${thesis.thes_id}/invitations`)    .then(response => {
+      if (!response.ok) throw new Error('Failed to load invitations');
+      return response.json();
+    })
+    .then(data => {
+      const invitationList = document.createElement('ul');
+      invitationList.innerHTML = `
+        <li><strong>Prof2 ID:</strong> ${data.Prof2_id} — <em>${data.Prof2Response}</em></li>
+        <li><strong>Prof3 ID:</strong> ${data.Prof3_id} — <em>${data.Prof3Response}</em></li>
+      `;
+      container.appendChild(invitationList);  // Añadir al contenedor de la tesis
+    })
+    .catch(err => {
+      console.error('Error loading invitations:', err);
+    });
+}
 
-        if (thesis.status === 'active') {
-          li.innerHTML += `
-            <textarea id="note-${thesis.thes_id}" placeholder="Add note (max 300 chars)"></textarea>
-            <button onclick="addNote(${thesis.thes_id})">Save Note</button>
-            <button onclick="markAsExamining(${thesis.thes_id})">Mark as Under Examination</button>
-          `;
-        }
 
+  if (thesis.status === 'active' && thesis.keysup_id == prof_id) {
+    const canCancel = (new Date(thesis.assignment_date) <= new Date(Date.now() - 2 * 365 * 24 * 60 * 60 * 1000));
+    if (canCancel) {
+      li.innerHTML += `
+        <label>Assembly #: <input id="assemblyNum-${thesis.thes_id}" type="number"></label>
+        <label>Year: <input id="assemblyYear-${thesis.thes_id}" type="number"></label>
+        <button onclick="cancelAfter2Years(${thesis.thes_id})">Cancel Thesis (2+ yrs)</button>
+    `;
+  }
+}
         if (thesis.status === 'examining') {
           li.innerHTML += `
             <a href="/uploads/${thesis.thes_id}/draft.pdf" target="_blank">View Draft</a><br>
@@ -173,7 +230,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <button onclick="submitGrade(${thesis.thes_id})">Submit Grade</button>
           `;
         }
-
+        if (list) {
+          list.appendChild(item);
+        } else {
+          console.error("❌ thesisList not found in the DOM");
+        }
         list.appendChild(li);
       });
     } catch (err) {
@@ -228,6 +289,7 @@ window.cancelThesis = async function(thesisId) {
     document.querySelector('.man.the').click();
   }
 };
+
 
 window.addNote = async function(thesisId) {
   const note = document.getElementById(`note-${thesisId}`).value;

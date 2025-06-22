@@ -116,6 +116,9 @@ CREATE TABLE thesis (
   status ENUM("assigning", "active", "examining", "completed"),
   grade INT(3),
   assignment_date DATE,
+  cancel_reason VARCHAR(255),
+  assembly_number INT,
+  assembly_year INT,
   completion_date DATE,
   PRIMARY KEY(stud_id, thes_id),
   UNIQUE KEY (thes_id),
@@ -137,6 +140,8 @@ CREATE TABLE supervised (
 -- ============================
 CREATE TABLE pending_thes (
   stud_id INT(10) NOT NULL,
+  invited_date DATE,
+  response_date DATE,
   thes_id INT(10) NOT NULL,
   keyProf_id INT(10) NOT NULL,
   Prof2_id INT(10) NOT NULL,
@@ -146,6 +151,7 @@ CREATE TABLE pending_thes (
   PRIMARY KEY (stud_id, thes_id),
   FOREIGN KEY (thes_id) REFERENCES thesis(thes_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
 
 -- ============================
 -- Tesis completadas

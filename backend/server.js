@@ -133,6 +133,51 @@ app.post('/api/instructor/theses/:id/cancel', (req, res) => {
     });
   });
 });
+app.get('/api/instructor/theses/:id/notes', (req, res) => {
+  const { id } = req.params;
+  const { prof_id } = req.query;
+
+  db.query(
+    'SELECT note, created_at FROM thesis_notes WHERE thes_id = ? AND prof_id = ?',
+    [id, prof_id],
+    (err, results) => {
+      if (err) return res.status(500).json({ message: 'DB error loading notes' });
+      res.json(results);
+    }
+  );
+});
+app.post('/api/instructor/theses/:id/cancel-after-two-years', (req, res) => {
+  const { id } = req.params;
+  const { assembly_number, assembly_year } = req.body;
+
+  const checkDateSql = 'SELECT assignment_date FROM thesis WHERE thes_id = ?';
+  db.query(checkDateSql, [id], (err, rows) => {
+    if (err || rows.length === 0) return res.status(500).json({ message: 'Thesis not found' });
+
+    const assignedDate = new Date(rows[0].assignment_date);
+    const now = new Date();
+    const twoYearsAgo = new Date();
+    twoYearsAgo.setFullYear(now.getFullYear() - 2);
+
+    if (assignedDate > twoYearsAgo)
+      return res.status(400).json({ message: 'Cannot cancel before 2 years' });
+
+    const sql = `
+      UPDATE thesis
+      SET status = 'cancelled',
+          cancel_reason = 'by Instructor',
+          assembly_number = ?,
+          assembly_year = ?
+      WHERE thes_id = ?
+    `;
+    db.query(sql, [assembly_number, assembly_year, id], err => {
+      if (err) return res.status(500).json({ message: 'Update failed' });
+      res.json({ message: 'Thesis cancelled after 2 years' });
+    });
+  });
+});
+
+
 
 // Add a note to a thesis
 app.post('/api/instructor/theses/:id/notes', (req, res) => {
@@ -165,6 +210,18 @@ app.post('/api/instructor/theses/:id/mark-exam', (req, res) => {
 app.get('/api/instructor/theses/:id/announcement', (req, res) => {
   res.json({ text: 'Presentation scheduled for [date/time]' });
 });
+app.get('/api/instructor/theses/:id/grades', (req, res) => {
+  const { id } = req.params;
+  db.query(
+    'SELECT prof_id, criteria1, criteria2, total_grade FROM grades WHERE thes_id = ?',
+    [id],
+    (err, results) => {
+      if (err) return res.status(500).json({ message: 'Error loading grades' });
+      res.json(results);
+    }
+  );
+});
+
 
 // Submit a grade for a thesis
 app.post('/api/instructor/theses/:id/grade', (req, res) => {
