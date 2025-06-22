@@ -56,38 +56,33 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // VIEW CREATED TOPICS
-  document.querySelector('.vie.th')?.addEventListener('click', async () => {
-    hideAllPanels();
-    const panel = document.getElementById('viewTopicsPanel');
-    const list = document.getElementById('createdTopicsList');
-    panel.style.display = 'flex';
-    list.innerHTML = '';
 
-    const profId = localStorage.getItem('prof_id');
-    if (!profId) return alert('Instructor ID not found');
+document.querySelector('.vie.th')?.addEventListener('click', () => {
+  hideAllPanels();
+  loadCreatedTopics();  // 👈 aquí se usa la función nueva
+});
 
-    try {
-      const res = await fetch(`http://localhost:3000/api/instructor/topics?prof_id=${profId}`);
-      const data = await res.json();
 
-      if (!Array.isArray(data)) throw new Error('Unexpected response');
-      if (data.length === 0) return list.innerHTML = '<li>No topics found.</li>';
+// Function to edit a topic
+window.editTopic = function(topic, title, description) {
+  const newTitle = prompt('New title:', title);
+  const newDesc = prompt('New description:', description);
+  if (!newTitle || !newDesc) return;
 
-      data.forEach(topic => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-          <strong>${topic.title}</strong><br/>
-          <em>${topic.description}</em><br/>
-          <button onclick="editTopic(${topic.id}, '${topic.title}', \`${topic.description}\`)">Edit</button>
-          <hr/>
-        `;
-        list.appendChild(li);
-      });
-    } catch (err) {
-      console.error('Error loading topics:', err);
-      list.innerHTML = '<li>Error loading topics</li>';
-    }
-  });
+  const prof_id = localStorage.getItem('prof_id');
+
+  fetch(`http://localhost:3000/api/instructor/topics/${topic}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title: newTitle, description: newDesc, prof_id })
+  })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message || 'Topic updated.');
+       loadCreatedTopics(); // reload topics
+    });
+};
+
 
   // VIEW STATISTICS
   document.querySelector('.vie.sta')?.addEventListener('click', () => {
@@ -133,6 +128,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 }
+// Ejemplo: marcar como completada
+router.post('/api/instructor/theses/:id/complete', async (req, res) => {
+  const thesisId = req.params.id;
+  const { grade } = req.body;
+
+  try {
+    await db.query(`
+      UPDATE thesis
+      SET status = 'completed',
+          grade = ?,
+          completion_date = CURDATE()
+      WHERE thes_id = ?
+    `, [grade, thesisId]);
+
+    res.status(200).json({ message: 'Thesis marked as completed.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error completing thesis.' });
+  }
+});
+
 
   // MANAGEMENT OF THESES
   function loadTheses() {
@@ -259,9 +275,16 @@ window.editTopic = function(id, title, description) {
     .then(res => res.json())
     .then(data => {
       alert(data.message || 'Topic updated.');
-      document.querySelector('.vie.th').click(); // reload topics
+
+      // 👇 Esto vuelve a ejecutar el botón "view topics" para recargar los datos
+      document.querySelector('.vie.th')?.click();
+    })
+    .catch(err => {
+      console.error('Update error:', err);
+      alert('Failed to update topic');
     });
 };
+
 
 window.viewInvitations = async function(thesisId) {
   const res = await fetch(`http://localhost:3000/api/instructor/theses/${thesisId}/invitations`);
@@ -326,3 +349,35 @@ window.submitGrade = async function(thesisId) {
   });
   alert('Grade submitted.');
 };
+async function loadCreatedTopics() {
+  const panel = document.getElementById('viewTopicsPanel');
+  const list = document.getElementById('createdTopicsList');
+  panel.style.display = 'flex';
+  list.innerHTML = '';
+
+  const profId = localStorage.getItem('prof_id');
+  if (!profId) return alert('Instructor ID not found');
+
+  try {
+    const res = await fetch(`http://localhost:3000/api/instructor/topics?prof_id=${profId}`);
+    const data = await res.json();
+
+    if (!Array.isArray(data)) throw new Error('Unexpected response');
+    if (data.length === 0) return list.innerHTML = '<li>No topics found.</li>';
+
+    data.forEach(topic => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <strong>${topic.title}</strong><br/>
+        <em>${topic.description}</em><br/>
+        <button onclick="editTopic(${topic.id}, '${topic.title}', \`${topic.description}\`)">Edit</button>
+        <hr/>
+      `;
+      list.appendChild(li);
+    });
+  } catch (err) {
+    console.error('Error loading topics:', err);
+    list.innerHTML = '<li>Error loading topics</li>';
+  }
+}
+

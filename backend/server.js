@@ -83,7 +83,7 @@ app.get('/api/instructor/theses', (req, res) => {
     return res.status(400).json({ message: 'Missing professor ID' });
 
   const sql = `
-    SELECT t.thes_id, t.stud_id, t.status, t.topic, t.keysup_id, t.assignment_date,
+    SELECT t.thes_id, t.stud_id, t.status, t.id, t.keysup_id, t.assignment_date,
            pt.Prof2_id, pt.Prof2Response, pt.Prof3_id, pt.Prof3Response
     FROM thesis t
     LEFT JOIN pending_thes pt ON pt.thes_id = t.thes_id
@@ -299,7 +299,7 @@ app.get('/api/instructor/topics', (req, res) => {
   const profId = req.query.prof_id;
   console.log('🔍 GET /topics - prof_id:', profId);
   db.query(
-    'SELECT topic, title, description FROM topics WHERE prof_id = ?',
+    'SELECT id, title, description FROM topics WHERE prof_id = ?',
     [profId],
     (err, results) => {
       if (err) {

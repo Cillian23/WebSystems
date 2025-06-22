@@ -96,12 +96,14 @@ CREATE TABLE professor (
 -- Tópicos propuestos
 -- ============================
 CREATE TABLE topics (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id INT  PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
+  deparment VARCHAR (255),
   description TEXT NOT NULL,
   prof_id INT NOT NULL,
-  FOREIGN KEY (prof_id) REFERENCES professor(prof_id) ON DELETE CASCADE ON UPDATE CASCADE
-);
+  PRIMARY KEY (topic, prof_id),
+  FOREIGN KEY (prof_id) REFERENCES professor(prof_id)
+  );
 
 -- ============================
 -- Tesis
@@ -208,13 +210,13 @@ AFTER UPDATE ON thesis
 FOR EACH ROW
 BEGIN
   IF NEW.status = "completed" THEN
-    INSERT INTO comp_thes VALUES (NEW.thes_id, NEW.keysup_id, NEW.topic, NEW.grade);
+    INSERT INTO comp_thes (thesis_id, sup_id, subject, grade)
+    VALUES (NEW.thes_id, NEW.keysup_id, NEW.topic, NEW.grade);
   END IF;
 END$$
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS user_bucket;
-DELIMITER $$
+
 CREATE TRIGGER user_bucket
 AFTER INSERT ON user
 FOR EACH ROW
